@@ -9891,6 +9891,8 @@ static void mtk_dsi_vdo_timing_change(struct mtk_dsi *dsi,
 			hfp = adjusted_mode.hsync_start -
 				adjusted_mode.hdisplay;
 		dsi->vm.hfront_porch = hfp;
+		if (dsi->slave_dsi)
+			dsi->slave_dsi->vm.hfront_porch = hfp;
 
 		if (dsi->mipi_hopping_sta) {
 			DDPINFO("%s,mipi_clk_change_sta\n", __func__);
@@ -9899,6 +9901,8 @@ static void mtk_dsi_vdo_timing_change(struct mtk_dsi *dsi,
 			hbp = adjusted_mode.htotal -
 				adjusted_mode.hsync_end;
 		dsi->vm.hback_porch = hbp;
+		if (dsi->slave_dsi)
+			dsi->slave_dsi->vm.hback_porch = hbp;
 
 		if (dsi->mipi_hopping_sta && dsi->ext) {
 			DDPINFO("%s,mipi_clk_change_sta\n", __func__);
@@ -9907,6 +9911,8 @@ static void mtk_dsi_vdo_timing_change(struct mtk_dsi *dsi,
 			vfp = adjusted_mode.vsync_start -
 				adjusted_mode.vdisplay;
 		dsi->vm.vfront_porch = vfp;
+		if (dsi->slave_dsi)
+			dsi->slave_dsi->vm.vfront_porch = vfp;
 
 		mtk_dsi_calc_vdo_timing(dsi);
 		mtk_dsi_porch_setting(comp, handle, DSI_HFP, dsi->hfp_byte);
@@ -9991,6 +9997,8 @@ static void mtk_dsi_vdo_timing_change(struct mtk_dsi *dsi,
 			vfp = adjusted_mode.vsync_start -
 				adjusted_mode.vdisplay;
 		dsi->vm.vfront_porch = vfp;
+		if (dsi->slave_dsi)
+			dsi->slave_dsi->vm.vfront_porch = vfp;
 
 		/* Msync 2.0 ToDo: can we change vm.vfront_porch according msync?
 		 * mmdvfs,dramdvfs according to vm.vfront_porch?
