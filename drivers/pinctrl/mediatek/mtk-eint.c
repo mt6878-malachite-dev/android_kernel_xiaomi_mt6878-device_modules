@@ -507,17 +507,10 @@ static void mtk_eint_irq_handler(struct irq_desc *desc)
 				}
 
 				dual_edge = eint->pins[eint_num].dual_edge;
-				if (dual_edge) {
-					/*
-					 * Clear soft-irq in case we raised it last
-					 * time.
-					 */
-//					mtk_eint_soft_clr(eint, eint_num);
-
+				if (dual_edge)
 					start_level =
 					eint->gpio_xlate->get_gpio_state(eint->pctl,
 									 eint_num);
-				}
 
 				generic_handle_irq(virq);
 
