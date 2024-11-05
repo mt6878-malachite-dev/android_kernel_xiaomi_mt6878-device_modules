@@ -1697,8 +1697,12 @@ static int mtk_dai_adda_hw_params(struct snd_pcm_substream *substream,
 			regmap_write(afe->regmap,
 				     AFE_ADDA_UL1_IIR_COEF_10_09, 0x0000C048);
 
-			regmap_write(afe->regmap,
-				     AFE_ADDA_UL1_SRC_CON0, ul_src_con0);
+			regmap_update_bits(afe->regmap,
+				     AFE_ADDA_UL1_SRC_CON0,
+				     UL_IIR_ON_TMP_CTL_MASK_SFT|
+				     UL_IIRMODE_CTL_MASK_SFT |
+				     UL_VOICE_MODE_CH1_CH2_CTL_MASK_SFT,
+				     ul_src_con0);
 
 			/* mtkaif_rxif_data_mode = 0, amic */
 			regmap_update_bits(afe->regmap,
@@ -1718,8 +1722,12 @@ static int mtk_dai_adda_hw_params(struct snd_pcm_substream *substream,
 			regmap_write(afe->regmap,
 				     AFE_ADDA_UL0_IIR_COEF_10_09, 0x0000C048);
 
-			regmap_write(afe->regmap,
-				     AFE_ADDA_UL0_SRC_CON0, ul_src_con0);
+			regmap_update_bits(afe->regmap,
+				     AFE_ADDA_UL0_SRC_CON0,
+				     UL_IIR_ON_TMP_CTL_MASK_SFT|
+				     UL_IIRMODE_CTL_MASK_SFT |
+				     UL_VOICE_MODE_CH1_CH2_CTL_MASK_SFT,
+				     ul_src_con0);
 
 			/* mtkaif_rxif_data_mode = 0, amic */
 			regmap_update_bits(afe->regmap,
@@ -1760,8 +1768,12 @@ static int mtk_dai_adda_hw_params(struct snd_pcm_substream *substream,
 			regmap_write(afe->regmap,
 				     AFE_ADDA_UL1_IIR_COEF_10_09, 0x0000C048);
 
-			regmap_write(afe->regmap,
-				     AFE_ADDA_UL1_SRC_CON0, ul_src_con0);
+			regmap_update_bits(afe->regmap,
+				     AFE_ADDA_UL1_SRC_CON0,
+				     UL_IIR_ON_TMP_CTL_MASK_SFT|
+				     UL_IIRMODE_CTL_MASK_SFT |
+				     UL_VOICE_MODE_CH1_CH2_CTL_MASK_SFT,
+				     ul_src_con0);
 
 			/* mtkaif_rxif_data_mode = 0, amic */
 			regmap_update_bits(afe->regmap,
