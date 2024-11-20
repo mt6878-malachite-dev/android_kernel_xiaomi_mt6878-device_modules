@@ -4438,6 +4438,9 @@ static void check_is_mml_layer(const int disp_idx,
 		|| mtk_crtc->is_mml || l_rule_info->bk_mml_dl_lye)) {
 		u32 cnt = __builtin_popcount(mml_ovl_layers);
 		enum MTK_LAYERING_CAPS dc_cap = MTK_MML_DISP_DECOUPLE_LAYER;
+		if (kref_read(&mtk_crtc->mml_ir_sram.ref) ||
+			(mtk_crtc->mml_link_state == MML_IR_IDLE))
+			dc_cap = MTK_MML_DISP_MDP_LAYER;
 
 		while (cnt--) {
 			i = __builtin_ffs(mml_ovl_layers) - 1;
