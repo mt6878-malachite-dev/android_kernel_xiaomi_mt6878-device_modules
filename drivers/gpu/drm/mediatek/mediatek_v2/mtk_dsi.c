@@ -9878,9 +9878,9 @@ static void mtk_dsi_vdo_timing_change(struct mtk_dsi *dsi,
 						dsi->ext->params->data_rate_khz);
 			}
 			if (dsi->data_rate) {
-				mtk_dsi_phy_timconfig(dsi, NULL);
+				mtk_dsi_phy_timconfig(dsi, handle);
 				if (dsi->slave_dsi)
-					mtk_dsi_phy_timconfig(dsi->slave_dsi, NULL);
+					mtk_dsi_phy_timconfig(dsi->slave_dsi, handle);
 			}
 		}
 
@@ -9983,9 +9983,9 @@ static void mtk_dsi_vdo_timing_change(struct mtk_dsi *dsi,
 							dsi->ext->params->data_rate_khz);
 				}
 				if (dsi->data_rate) {
-					mtk_dsi_phy_timconfig(dsi, NULL);
+					mtk_dsi_phy_timconfig(dsi, handle);
 					if (dsi->slave_dsi)
-						mtk_dsi_phy_timconfig(dsi->slave_dsi, NULL);
+						mtk_dsi_phy_timconfig(dsi->slave_dsi, handle);
 				}
 			}
 		}
