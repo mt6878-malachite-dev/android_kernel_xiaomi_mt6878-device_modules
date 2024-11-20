@@ -869,18 +869,10 @@ static struct regname rn[] = {
 	REGNAME(afe, 0x8, AUDIO_TOP_2),
 	REGNAME(afe, 0xC, AUDIO_TOP_3),
 	REGNAME(afe, 0x10, AUDIO_TOP_4),
-	/* IMP_IIC_WRAP_CEN_S register */
-	REGNAME(im_c_s, 0xE00, AP_CLOCK_CG),
 	/* UFSCFG_AO register */
 	REGNAME(ufsao, 0x4, UFS_AO_CG_0),
 	/* UFSCFG_PDN register */
 	REGNAME(ufspdn, 0x4, UFS_PDN_CG_0),
-	/* IMP_IIC_WRAP_E_S register */
-	REGNAME(imp_e_s, 0xE00, AP_CLOCK_CG),
-	/* IMP_IIC_WRAP_ES_S register */
-	REGNAME(imp_es_s, 0xE00, AP_CLOCK_CG),
-	/* IMP_IIC_WRAP_W_S register */
-	REGNAME(imp_w_s, 0xE00, AP_CLOCK_CG),
 	/* MFGPLL_PLL_CTRL register */
 	REGNAME(mfg_ao, 0x8, MFGPLL_CON0),
 	REGNAME(mfg_ao, 0xc, MFGPLL_CON1),
@@ -957,9 +949,6 @@ static struct regname rn[] = {
 	REGNAME(vlp, 0x0038, VLP_CLK_CFG_4),
 	/* SCP register */
 	REGNAME(scp, 0x154, AP_SPI_CG),
-	/* HFRP register */
-	REGNAME(hfrp, 0x0, Vdisp_DVFSRC_BASIC_CONTROL),
-	REGNAME(hfrp, 0x0, Vmm_DVFSRC_BASIC_CONTROL),
 	/* CAMSYS_MAIN register */
 	REGNAME(cam_m, 0x0, CAM_MAIN_CG_0),
 	REGNAME(cam_m, 0x4C, CAM_MAIN_CG_1),
