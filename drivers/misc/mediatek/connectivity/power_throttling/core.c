@@ -92,17 +92,8 @@ int conn_pwr_get_low_battery_level(struct conn_pwr_update_info *info)
 	if (conn_pwr_get_drv_status(CONN_PWR_DRV_WIFI) == CONN_PWR_DRV_STATUS_ON ||
 		(info->reason == CONN_PWR_ARB_SUBSYS_ON_OFF &&
 		 info->drv == CONN_PWR_DRV_WIFI && info->status == CONN_PWR_DRV_STATUS_ON)) {
-		switch (low_battery_power_level) {
-		case LOW_BATTERY_LEVEL_0:
-		case LOW_BATTERY_LEVEL_1:
-		case LOW_BATTERY_LEVEL_2:
-			break;
-		case LOW_BATTERY_LEVEL_3:
+		if (low_battery_power_level >= LOW_BATTERY_LEVEL_3)
 			ret = CONN_PWR_THR_LV_1;
-			break;
-		default:
-			break;
-		}
 	}
 #endif
 
