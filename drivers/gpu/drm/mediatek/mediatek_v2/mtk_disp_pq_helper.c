@@ -158,7 +158,7 @@ int mtk_drm_ioctl_sw_read_impl(struct drm_crtc *crtc, void *data)
 		break;
 #if defined(CCORR_SUPPORT)
 	case SWREG_CCORR_BASE_ADDRESS:
-		ret = pq_data->tuning_pa_table[TUNING_DISP_CCORR].pa_base;
+		ret = pq_data->tuning_pa_table[TUNING_DISP_CCORR_LINEAR].pa_base;
 		break;
 #endif
 	case SWREG_DISP_TDSHP_BASE_ADDRESS:
@@ -359,6 +359,7 @@ int mtk_drm_ioctl_hw_write_impl(struct drm_crtc *crtc, void *data)
 		if (companion_pa) {
 			cmdq_pkt_write(cmdq_handle, mtk_crtc->gce_obj.base,
 						companion_pa, wParams->val, wParams->mask);
+
 			if (index_table == TUNING_DISP_COLOR && offset == DISP_COLOR_POS_MAIN) {
 				struct mtk_ddp_comp *comp = mtk_ddp_comp_sel_in_cur_crtc_path(
 						mtk_crtc, MTK_DISP_COLOR, 0);
@@ -772,9 +773,10 @@ int mtk_pq_helper_frame_config(struct drm_crtc *crtc, struct cmdq_pkt *cmdq_hand
 	return 0;
 }
 
-static void mtk_pq_helper_fill_tuning_table(struct mtk_drm_crtc *mtk_crtc,
+static void mtk_pq_helper_fill_tuning_table(struct mtk_ddp_comp *comp,
 	int comp_type, int path_order, resource_size_t pa, resource_size_t companion_pa)
 {
+	struct mtk_drm_crtc *mtk_crtc = comp->mtk_crtc;
 	struct pq_common_data *pq_data = mtk_crtc->pq_data;
 	unsigned int table_index = TUNING_REG_MAX;
 
@@ -783,10 +785,12 @@ static void mtk_pq_helper_fill_tuning_table(struct mtk_drm_crtc *mtk_crtc,
 		table_index = TUNING_DISP_COLOR;
 		break;
 	case MTK_DISP_CCORR:
-		if (path_order)
-			table_index = TUNING_DISP_CCORR1;
-		else
-			table_index = TUNING_DISP_CCORR;
+	{
+		struct mtk_disp_ccorr *ccorr_data = comp_to_ccorr(comp);
+
+		if (ccorr_data->is_linear)
+			table_index = TUNING_DISP_CCORR_LINEAR;
+	}
 		break;
 	case MTK_DISP_AAL:
 		table_index = TUNING_DISP_AAL;
@@ -862,7 +866,7 @@ int mtk_pq_helper_fill_comp_pipe_info(struct mtk_ddp_comp *comp, int *path_order
 
 		if (_companion)
 			companion_regs_pa = _companion->regs_pa;
-		mtk_pq_helper_fill_tuning_table(comp->mtk_crtc, comp_type, _path_order,
+		mtk_pq_helper_fill_tuning_table(comp, comp_type, _path_order,
 					comp->regs_pa, companion_regs_pa);
 	}
 	return ret;
