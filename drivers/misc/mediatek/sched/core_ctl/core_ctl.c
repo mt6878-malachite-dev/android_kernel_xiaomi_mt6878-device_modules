@@ -124,6 +124,7 @@ static DEFINE_SPINLOCK(check_lock);
 static DEFINE_SPINLOCK(core_ctl_force_lock);
 static bool initialized;
 static unsigned int default_min_cpus[MAX_CLUSTERS] = {4, 2, 0};
+static unsigned int default_busy_up_thres[MAX_CLUSTERS] = {60, 80, 80};
 static bool debug_enable;
 module_param_named(debug_enable, debug_enable, bool, 0600);
 
@@ -494,6 +495,20 @@ static int set_up_thres(struct cluster_data *cluster, unsigned int val)
 	return ret;
 }
 
+static void set_cpu_busy_up_thres(struct cluster_data *cluster, unsigned int val)
+{
+	unsigned int old_thresh;
+	unsigned long flags;
+
+	spin_lock_irqsave(&state_lock, flags);
+	old_thresh = cluster->cpu_busy_up_thres;
+	if (old_thresh != val) {
+		cluster->cpu_busy_up_thres = val;
+		cluster->cpu_busy_down_thres = val > 20 ? val - 20 : 0;
+	}
+	spin_unlock_irqrestore(&state_lock, flags);
+}
+
 /* ==================== export function ======================== */
 
 int core_ctl_set_min_cpus(unsigned int cid, unsigned int min)
@@ -770,17 +785,13 @@ EXPORT_SYMBOL(core_ctl_force_pause_cpu);
  */
 int core_ctl_set_cpu_busy_thres(unsigned int cid, unsigned int pct)
 {
-	unsigned long flags;
 	struct cluster_data *cluster;
 
 	if (pct > 100 || cid > 2)
 		return -EINVAL;
 
-	spin_lock_irqsave(&state_lock, flags);
 	cluster = &cluster_state[cid];
-	cluster->cpu_busy_up_thres = pct;
-	cluster->cpu_busy_down_thres = pct > 20 ? pct - 20 : 0;
-	spin_unlock_irqrestore(&state_lock, flags);
+	set_cpu_busy_up_thres(cluster, pct);
 	return 0;
 }
 EXPORT_SYMBOL(core_ctl_set_cpu_busy_thres);
@@ -956,6 +967,25 @@ static ssize_t show_thermal_up_thres(const struct cluster_data *state, char *buf
 	return scnprintf(buf, PAGE_SIZE, "%u\n", state->thermal_up_thres);
 }
 
+static ssize_t store_cpu_busy_up_thres(struct cluster_data *state,
+		const char *buf, size_t count)
+{
+	unsigned int val;
+
+	if (sscanf(buf, "%u\n", &val) != 1)
+		return -EINVAL;
+
+	/* No need to change up_thres for the last cluster */
+	if (state->cluster_id >= num_clusters-1)
+		return -EINVAL;
+
+	if (val > MAX_BTASK_THRESH)
+		val = MAX_BTASK_THRESH;
+
+	set_cpu_busy_up_thres(state, val);
+	return count;
+}
+
 static ssize_t show_cpu_busy_up_thres(const struct cluster_data *state, char *buf)
 {
 	return scnprintf(buf, PAGE_SIZE, "%u\n", state->cpu_busy_up_thres);
@@ -1037,7 +1067,7 @@ core_ctl_attr_rw(core_ctl_boost);
 core_ctl_attr_rw(enable);
 core_ctl_attr_ro(global_state);
 core_ctl_attr_ro(thermal_up_thres);
-core_ctl_attr_ro(cpu_busy_up_thres);
+core_ctl_attr_rw(cpu_busy_up_thres);
 
 static struct attribute *default_attrs[] = {
 	&min_cpus.attr,
@@ -1832,8 +1862,8 @@ static int cluster_init(const struct cpumask *mask)
 		state->cpu = cpu;
 	}
 
-	cluster->cpu_busy_up_thres = 80;
-	cluster->cpu_busy_down_thres = 60;
+	cluster->cpu_busy_up_thres = default_busy_up_thres[cluster->cluster_id];
+	cluster->cpu_busy_down_thres = cluster->cpu_busy_up_thres > 20 ? cluster->cpu_busy_up_thres - 20 : 0;
 
 	cluster->next_offline_time =
 		ktime_to_ms(ktime_get()) + cluster->offline_throttle_ms;
