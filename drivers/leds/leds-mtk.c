@@ -16,6 +16,8 @@
 #include <linux/slab.h>
 #include <linux/string.h>
 #include <leds-mtk.h>
+#include "mtk_low_battery_throttling.h"
+#include "mtk_bp_thl.h"
 
 
 /****************************************************************************
@@ -36,6 +38,10 @@ static DEFINE_MUTEX(leds_mutex);
 static BLOCKING_NOTIFIER_HEAD(mtk_leds_chain_head);
 
 struct mt_leds_desp_info *leds_info;
+
+#if IS_ENABLED(CONFIG_MTK_BATTERY_PERCENT_THROTTLING)
+static int led_bat_per_pt;
+#endif
 
 int mtk_leds_register_notifier(struct notifier_block *nb)
 {
@@ -516,6 +522,20 @@ int setMaxBrightness(int connector_id, int percent, bool enable)
 }
 EXPORT_SYMBOL(setMaxBrightness);
 
+#if IS_ENABLED(CONFIG_MTK_BATTERY_PERCENT_THROTTLING)
+static void mt_leds_bat_low_cb(BATTERY_PERCENT_LEVEL level)
+{
+	int percent = 100;
+
+	if (level >= LOW_BATTERY_LEVEL_2)
+		percent = led_bat_per_pt;
+
+	pr_info("%s:%d lv = %d, percent = %d\n", __func__, __LINE__, level, percent);
+
+	setMaxBrightness(-1, percent, 1);
+}
+#endif
+
 int mt_leds_parse_dt(struct mt_led_data *mdev, struct fwnode_handle *fwnode)
 {
 	int ret = 0;
@@ -578,6 +598,32 @@ int mt_leds_parse_dt(struct mt_led_data *mdev, struct fwnode_handle *fwnode)
 	} else {
 		mdev->conf.cdev.brightness = mdev->conf.cdev.max_brightness * 10 / 100;
 	}
+
+#if IS_ENABLED(CONFIG_MTK_BATTERY_PERCENT_THROTTLING)
+	ret = fwnode_property_read_u32(fwnode, "reg-bat-percent-pt", &(mdev->conf.reg_battery_percent_pt));
+
+	if (ret) {
+		pr_info("No need to register battery percent pt notify");
+		mdev->conf.reg_battery_percent_pt = 0;
+	}
+
+	pr_info("%s:%d ret = %d, reg_battery_percent_pt = %d\n", __func__, __LINE__, ret,
+		mdev->conf.reg_battery_percent_pt);
+
+	ret = fwnode_property_read_u32(fwnode, "bl-bat-pt-percent", &(mdev->conf.bl_bat_pt_per));
+
+	pr_info("%s:%d ret = %d, reg_battery_percent_pt = %d\n", __func__, __LINE__, ret,
+		mdev->conf.bl_bat_pt_per);
+
+	if (ret) {
+		pr_info("No need to register battery percent pt notify");
+		mdev->conf.bl_bat_pt_per = 67;
+	}
+	led_bat_per_pt = mdev->conf.bl_bat_pt_per;
+
+	if (mdev->conf.reg_battery_percent_pt == 1)
+		register_bp_thl_notify(mt_leds_bat_low_cb, BATTERY_PERCENT_PRIO_BACKLIGHT);
+#endif
 
 	strscpy(mdev->desp.name, mdev->conf.cdev.name,
 		sizeof(mdev->desp.name));

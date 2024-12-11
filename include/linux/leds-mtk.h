@@ -43,6 +43,10 @@ struct led_conf_info {
 	struct kernfs_node	*brightness_hw_changed_kn;
 #endif
 	enum mtk_leds_types led_type;
+#if IS_ENABLED(CONFIG_MTK_BATTERY_PERCENT_THROTTLING)
+	int reg_battery_percent_pt;
+	int bl_bat_pt_per;
+#endif
 };
 
 #ifdef CONFIG_LEDS_MT_BRIGHTNESS_HW_CHANGED
