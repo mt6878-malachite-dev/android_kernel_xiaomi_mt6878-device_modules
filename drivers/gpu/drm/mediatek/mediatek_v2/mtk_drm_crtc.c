@@ -6185,14 +6185,17 @@ static void mtk_crtc_update_ddp_state(struct drm_crtc *crtc,
 	int sphrt_enable;
 	struct mtk_drm_private *priv = crtc->dev->dev_private;
 
+	DDPMSG("%s need_seg=%d iot=%d sysid=%d", __func__, priv->data->need_seg_id, priv->is_iot, priv->data->mmsys_id);
 	if ((priv->data->need_seg_id == true) &&
 		(mtk_disp_check_segment(mtk_crtc, priv) == false) &&
-		(priv->data->mmsys_id == MMSYS_MT6878)) {
+		((priv->data->mmsys_id == MMSYS_MT6878) || priv->is_iot)) {
+
 		struct mtk_ddp_comp *comp = mtk_ddp_comp_request_output(mtk_crtc);
 
 		if (comp == NULL)
 			return;
 
+		DDPMSG("%s will stop trig loop", __func__);
 		mtk_ddp_comp_io_cmd(comp, NULL, DSI_COMP_DISABLE, NULL);
 		if (mtk_crtc_with_trigger_loop(crtc))
 			mtk_crtc_stop_trig_loop(crtc);
@@ -9155,10 +9158,13 @@ void mtk_crtc_start_trig_loop(struct drm_crtc *crtc)
 	rop.reg = false;
 	rop.idx = var2;
 
+	DDPMSG("%s need_seg=%d iot=%d sysid=%d", __func__, priv->data->need_seg_id, priv->is_iot, priv->data->mmsys_id);
 	if ((priv->data->need_seg_id == true) &&
 		(mtk_disp_check_segment(mtk_crtc, priv) == false) &&
-		(priv->data->mmsys_id == MMSYS_MT6878))
+		((priv->data->mmsys_id == MMSYS_MT6878) || priv->is_iot)) {
+		DDPMSG("%s not trig loop", __func__);
 		return;
+	}
 
 	if (mtk_crtc->trig_loop_cmdq_handle) {
 		DDPDBG("exist trigger loop, skip %s\n", __func__);

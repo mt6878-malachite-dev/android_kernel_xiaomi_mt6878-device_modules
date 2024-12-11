@@ -5700,6 +5700,7 @@ static const struct mtk_mmsys_driver_data mt6989_mmsys_driver_data = {
 	.bypass_infra_ddr_control = true,
 	.disable_merge_irq = mtk_ddp_disable_merge_irq,
 	.pf_ts_type = IRQ_CMDQ_CB,
+	.need_seg_id = true,
 };
 
 static const struct mtk_mmsys_driver_data mt6897_mmsys_driver_data = {
@@ -9133,6 +9134,12 @@ static int mtk_drm_probe(struct platform_device *pdev)
 	if (of_property_read_bool(dev->of_node, "is-tablet")) {
 		private->is_tablet = true;
 		DDPFUNC("is tablet!\n");
+	}
+
+
+	if (of_property_read_bool(dev->of_node, "is-iot")) {
+		private->is_iot = true;
+		DDPMSG("is iot!\n");
 	}
 
 	if (private->data->need_seg_id) {

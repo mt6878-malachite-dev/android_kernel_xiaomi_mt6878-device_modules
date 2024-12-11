@@ -135,6 +135,11 @@ static bool mtk_disp_check_segment_mt6878(struct mtk_drm_crtc *mtk_crtc,
 				struct mtk_drm_private *priv)
 {
 	bool ret = true;
+	bool efuse_status = false;
+
+	efuse_status = priv->seg_id == 0x0A || priv->seg_id == 0x09 || priv->seg_id == 0;
+	if (priv->is_iot && !efuse_status)
+		ret = false;
 
 	switch (priv->seg_id) {
 	case 1:
@@ -160,6 +165,11 @@ static bool mtk_disp_check_segment_mt6897(struct mtk_drm_crtc *mtk_crtc,
 	int hact = 0;
 	int vact = 0;
 	int vrefresh = 0;
+	bool efuse_status = false;
+
+	efuse_status = priv->seg_id == 0x09 || priv->seg_id == 0x0A || priv->seg_id == 0;
+	if (priv->is_iot && !efuse_status)
+		ret = false;
 
 	hact = mtk_crtc->base.state->adjusted_mode.hdisplay;
 	vact = mtk_crtc->base.state->adjusted_mode.vdisplay;
@@ -188,6 +198,21 @@ static bool mtk_disp_check_segment_mt6897(struct mtk_drm_crtc *mtk_crtc,
 	return ret;
 }
 
+static bool mtk_disp_check_segment_mt6989(struct mtk_drm_crtc *mtk_crtc,
+				struct mtk_drm_private *priv)
+{
+	bool ret = true;
+	bool efuse_status = false;
+
+	efuse_status = priv->seg_id == 0x08 || priv->seg_id == 0x05 || priv->seg_id == 0;
+	if (priv->is_iot && !efuse_status)
+		ret = false;
+
+	DDPMSG("%s iot=%d efuse_status=%d ret=%d\n", __func__, priv->is_iot, efuse_status, ret);
+
+	return ret;
+}
+
 bool mtk_disp_check_segment(struct mtk_drm_crtc *mtk_crtc,
 				struct mtk_drm_private *priv)
 {
@@ -209,10 +234,13 @@ bool mtk_disp_check_segment(struct mtk_drm_crtc *mtk_crtc,
 	}
 
 	if (priv->data->need_seg_id && !priv->is_tablet) {
+		DDPMSG("%s will check segment", __func__);
 		if (priv->data->mmsys_id == MMSYS_MT6878)
 			ret = mtk_disp_check_segment_mt6878(mtk_crtc, priv);
 		else if (priv->data->mmsys_id == MMSYS_MT6897)
 			ret = mtk_disp_check_segment_mt6897(mtk_crtc, priv);
+		else if (priv->data->mmsys_id == MMSYS_MT6989)
+			ret = mtk_disp_check_segment_mt6989(mtk_crtc, priv);
 	}
 
 	return ret;

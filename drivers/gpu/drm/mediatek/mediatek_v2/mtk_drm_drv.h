@@ -263,6 +263,8 @@ struct mtk_drm_private {
 
 	unsigned int seg_id;
 	unsigned int boot_mode;
+
+	bool is_iot;
 };
 
 struct mtk_drm_property {
