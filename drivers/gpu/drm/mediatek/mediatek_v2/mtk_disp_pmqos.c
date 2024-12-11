@@ -208,7 +208,8 @@ static bool mtk_disp_check_segment_mt6989(struct mtk_drm_crtc *mtk_crtc,
 	if (priv->is_iot && !efuse_status)
 		ret = false;
 
-	DDPMSG("%s iot=%d efuse_status=%d ret=%d\n", __func__, priv->is_iot, efuse_status, ret);
+	if(ret == false)
+		DDPINFO("%s, check sement fail: efuse_status=%d\n", __func__, efuse_status);
 
 	return ret;
 }
@@ -234,7 +235,6 @@ bool mtk_disp_check_segment(struct mtk_drm_crtc *mtk_crtc,
 	}
 
 	if (priv->data->need_seg_id && !priv->is_tablet) {
-		DDPMSG("%s will check segment", __func__);
 		if (priv->data->mmsys_id == MMSYS_MT6878)
 			ret = mtk_disp_check_segment_mt6878(mtk_crtc, priv);
 		else if (priv->data->mmsys_id == MMSYS_MT6897)
