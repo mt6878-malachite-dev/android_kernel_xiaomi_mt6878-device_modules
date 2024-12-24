@@ -15330,8 +15330,7 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 		oc-reduce-tx-lv1 = <0>;
 		oc-reduce-tx-lv2 = <6>;
 
-		soc-max-level = <1>;
-		soc-reduce-tx-lv1 = <0>;
+		soc-max-level = <0>;
 	};
 
 	bp_thl: bp-thl {
