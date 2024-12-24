@@ -521,6 +521,36 @@ int setMaxBrightness(int connector_id, int percent, bool enable)
 }
 EXPORT_SYMBOL(setMaxBrightness);
 
+int setPTBrightness(int percent)
+{
+	int i = 0;
+	int brightness = 0;
+
+	struct mt_led_data *led_dat = NULL;
+
+	while (i < leds_info->lens) {
+		pr_info("led %d name %s\n", i, leds_info->leds[i]->name);
+		if (strstr(leds_info->leds[i]->name, "lcd-backlight")) {
+			led_dat = container_of(leds_info->leds[i],
+				struct mt_led_data, desp);
+
+			pr_info("led_dat->last_percent %d\n", led_dat->last_percent);
+
+			if (led_dat->last_percent != 0) {
+				brightness = led_dat->last_brightness * percent / led_dat->last_percent;
+				led_dat->last_percent = percent;
+			}
+
+			pr_info("last_brightness %d, brightness = %d\n", led_dat->last_brightness, brightness);
+
+			mtk_set_brightness(&led_dat->conf.cdev, brightness);
+		}
+		i++;
+	}
+
+	return 0;
+}
+
 #if IS_ENABLED(CONFIG_MTK_BATTERY_PERCENT_THROTTLING)
 static void mt_leds_bat_low_cb(BATTERY_PERCENT_LEVEL level)
 {
@@ -535,7 +565,7 @@ static void mt_leds_bat_low_cb(BATTERY_PERCENT_LEVEL level)
 
 	pr_info("%s:%d lv = %d, percent = %d\n", __func__, __LINE__, level, percent);
 
-	setMaxBrightness(-1, percent, 1);
+	setPTBrightness(percent);
 }
 #endif
 
@@ -614,11 +644,12 @@ int mt_leds_parse_dt(struct mt_led_data *mdev, struct fwnode_handle *fwnode)
 		mdev->conf.reg_battery_percent_pt);
 
 	ret = fwnode_property_read_u32_array(fwnode, "bl-bat-pt-percent", mdev->conf.bl_bat_pt_per,
-		sizeof(mdev->conf.bl_bat_pt_per));
+		MAX_BL_PT_NUM);
 
 	if (ret) {
 		pr_info("failed to read battery percent properity, use default value");
-		memset(mdev->conf.bl_bat_pt_per, 0x43, sizeof(mdev->conf.bl_bat_pt_per));
+		mdev->conf.bl_bat_pt_per[0] = mdev->conf.bl_bat_pt_per[1] = mdev->conf.bl_bat_pt_per[2] = 100;
+		mdev->conf.bl_bat_pt_per[3] = mdev->conf.bl_bat_pt_per[4] = mdev->conf.bl_bat_pt_per[5] = 67;
 	}
 
 	pr_info("%s:%d ret = %d, bl_bat_pt_per value: %d, %d, %d, %d, %d, %d\n",
@@ -724,6 +755,7 @@ int mt_leds_classdev_register(struct device *parent,
 		pr_info("print log init error!");
 
 	led_dat->last_brightness = led_dat->conf.cdev.brightness;
+	led_dat->last_percent = 100;
 
 	mtk_set_hw_brightness(led_dat,
 		brightness_maptolevel(&led_dat->conf, led_dat->last_brightness),
