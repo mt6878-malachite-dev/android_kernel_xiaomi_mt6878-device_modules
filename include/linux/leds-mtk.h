@@ -6,6 +6,8 @@
 
 #include <linux/leds.h>
 
+#define MAX_BL_PT_NUM	6
+
 enum mtk_leds_events {
 	LED_BRIGHTNESS_CHANGED	= 0,
 	LED_STATUS_SHUTDOWN	= 1,
@@ -45,7 +47,7 @@ struct led_conf_info {
 	enum mtk_leds_types led_type;
 #if IS_ENABLED(CONFIG_MTK_BATTERY_PERCENT_THROTTLING)
 	int reg_battery_percent_pt;
-	int bl_bat_pt_per;
+	int bl_bat_pt_per[MAX_BL_PT_NUM];
 #endif
 };
 
