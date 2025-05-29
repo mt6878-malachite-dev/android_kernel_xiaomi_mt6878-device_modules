@@ -14,6 +14,12 @@ config CUSTOM_KERNEL_IMGSENSOR
 	  CUSTOM_KERNEL_MAIN_BACKUP_IMGSENSOR, CUSTOM_KERNEL_SUB_IMGSENSOR,
 	  and CUSTOM_KERNEL_SUB_BACKUP_IMGSENSOR
 
+config BUILD_XIAOMI_CAMERA_IMAGE_NAMES
+	string "build xiaomi camera image name"
+	help
+	  Kernel space image sensor driver. Define  project used all image
+	  sensors .The value is combination of BUILD_XIAOMI_CAMERA_IMAGE_NAMES
+
 config MTK_IMGSENSOR_PLATFORM_SUPPORT
 	bool "MTK PLATFORM for ALL PLATFORM"
 	help

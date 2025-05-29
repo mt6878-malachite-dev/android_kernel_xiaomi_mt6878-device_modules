@@ -827,7 +827,6 @@ void mtk_sched_switch(void *data, unsigned int sched_mode, struct task_struct *p
 {
 	if (next->pid == 0)
 		per_cpu(sbb, rq->cpu)->active = 0;
-
 }
 #endif
 

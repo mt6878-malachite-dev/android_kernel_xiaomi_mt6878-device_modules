@@ -22,6 +22,10 @@
 #include "flashlight-core.h"
 #include "flashlight-dt.h"
 
+#include <linux/leds.h>
+#include <linux/kobject.h>
+#include <linux/sysfs.h>
+
 /* define device tree */
 #ifndef LED191_DTNAME
 #define LED191_DTNAME "mediatek,flashlights_led191"
@@ -35,20 +39,34 @@
 static DEFINE_MUTEX(led191_mutex);
 static struct work_struct led191_work;
 
+#define LED191_SYS_NODE
+#define LED_SYSTEM
 /* define pinctrl */
 #define LED191_PINCTRL_PIN_HWEN 0
+#define LED191_PINCTRL_PIN_HWSEL 1
 #define LED191_PINCTRL_PINSTATE_LOW 0
 #define LED191_PINCTRL_PINSTATE_HIGH 1
+
+
 #define LED191_PINCTRL_STATE_HWEN_HIGH "hwen_high"
 #define LED191_PINCTRL_STATE_HWEN_LOW  "hwen_low"
+
+#define LED191_PINCTRL_STATE_HWSEL_HIGH "hwsel_high" //flash mode
+#define LED191_PINCTRL_STATE_HWSEL_LOW  "hwsel_low"  //torch mode
+
 static struct pinctrl *led191_pinctrl;
+
 static struct pinctrl_state *led191_hwen_high;
 static struct pinctrl_state *led191_hwen_low;
+
+static struct pinctrl_state *led191_hwsel_high;
+static struct pinctrl_state *led191_hwsel_low;
 
 /* define usage count */
 static int use_count;
 
 static int g_flash_duty = -1;
+#define TORCH_DUTY 6
 
 /* platform data */
 struct led191_platform_data {
@@ -86,6 +104,20 @@ static int led191_pinctrl_init(struct platform_device *pdev)
 		ret = PTR_ERR(led191_hwen_low);
 	}
 
+	led191_hwsel_high = pinctrl_lookup_state(
+			led191_pinctrl, LED191_PINCTRL_STATE_HWSEL_HIGH);
+	if (IS_ERR(led191_hwsel_high)) {
+		pr_info("Failed to init (%s)\n",
+			LED191_PINCTRL_STATE_HWSEL_HIGH);
+		ret = PTR_ERR(led191_hwsel_high);
+	}
+	led191_hwsel_low = pinctrl_lookup_state(
+			led191_pinctrl, LED191_PINCTRL_STATE_HWSEL_LOW);
+	if (IS_ERR(led191_hwsel_low)) {
+		pr_info("Failed to init (%s)\n", LED191_PINCTRL_STATE_HWSEL_LOW);
+		ret = PTR_ERR(led191_hwsel_low);
+	}
+
 	return ret;
 }
 
@@ -111,6 +143,18 @@ static int led191_pinctrl_set(int pin, int state)
 		else
 			pr_info("set err, pin(%d) state(%d)\n", pin, state);
 		break;
+	case LED191_PINCTRL_PIN_HWSEL:
+		if (state == LED191_PINCTRL_PINSTATE_LOW &&
+				!IS_ERR(led191_hwsel_low))
+			ret = pinctrl_select_state(
+					led191_pinctrl, led191_hwsel_low);
+		else if (state == LED191_PINCTRL_PINSTATE_HIGH &&
+				!IS_ERR(led191_hwsel_high))
+			ret = pinctrl_select_state(
+					led191_pinctrl, led191_hwsel_high);
+		else
+			pr_info("set err, pin(%d) state(%d)\n", pin, state);
+		break;
 	default:
 		pr_info("set err, pin(%d) state(%d)\n", pin, state);
 		break;
@@ -127,15 +171,17 @@ static int led191_pinctrl_set(int pin, int state)
 /* flashlight enable function */
 static int led191_enable(void)
 {
-	int pin = LED191_PINCTRL_PIN_HWEN;
+	int enpin = LED191_PINCTRL_PIN_HWEN;
+	int selpin = LED191_PINCTRL_PIN_HWSEL;
 
-	if (g_flash_duty == 1) {
-		led191_pinctrl_set(pin, 1);
-	} else {
-		led191_pinctrl_set(pin, 1);
-		led191_pinctrl_set(pin, 0);
+	if (g_flash_duty == TORCH_DUTY) {//torch mode
+		led191_pinctrl_set(selpin, 0);
+		led191_pinctrl_set(enpin, 1);
+	} else if(g_flash_duty > 0){	//flash mode
+		led191_pinctrl_set(selpin, 1);
+		led191_pinctrl_set(enpin, 1);
+		
 	}
-	led191_pinctrl_set(pin, 1);
 
 	return 0;
 }
@@ -143,10 +189,13 @@ static int led191_enable(void)
 /* flashlight disable function */
 static int led191_disable(void)
 {
-	int pin = 0;
-	int state = 0;
+	int enpin = LED191_PINCTRL_PIN_HWEN;
+	int selpin = LED191_PINCTRL_PIN_HWSEL;
 
-	return led191_pinctrl_set(pin, state);
+	led191_pinctrl_set(enpin, 0);
+	led191_pinctrl_set(selpin, 0);
+
+	return 0;
 }
 
 /* set flashlight level */
@@ -159,7 +208,7 @@ static int led191_set_level(int level)
 /* flashlight init */
 static int led191_init(void)
 {
-	int pin = 0;
+	int pin = LED191_PINCTRL_PIN_HWEN;
 	int state = 0;
 
 	return led191_pinctrl_set(pin, state);
@@ -238,7 +287,7 @@ static int led191_ioctl(unsigned int cmd, unsigned long arg)
 		}
 		break;
 	default:
-		pr_info("No such command and arg(%d): (%d, %d)\n",
+		pr_debug("No such command and arg(%d): (%d, %d)\n",
 				channel, _IOC_NR(cmd), (int)fl_arg->arg);
 		return -ENOTTY;
 	}
@@ -315,7 +364,126 @@ static int led191_chip_init(void)
 
 	return 0;
 }
+#ifdef LED_SYSTEM
+static void mtk_flashlight_brightness_set(struct led_classdev *led_cdev, enum led_brightness value)
+{
+	if ( value == LED_OFF ) { // torch disable
+		g_flash_duty = 0;
+		led191_disable();
+	}  else if (( value > 0 ) && ( value <= 255 )) { //torch enable
+		g_flash_duty = TORCH_DUTY;
+		led191_enable();
+	}else {
+		pr_err("invalid value %d ", value);
+	}
+}
 
+static enum led_brightness mtk_flashlight_brightness_get(
+struct led_classdev *led_cdev)
+{
+	return 0;
+}
+static struct led_classdev pmic_flashlight_led = {
+	.name           = "flashlight",
+	.brightness_set = mtk_flashlight_brightness_set,
+	.brightness_get = mtk_flashlight_brightness_get,
+	.brightness     = LED_OFF,
+};
+
+static struct led_classdev pmic_torch_led = {
+	.name           = "torch-light0",
+	.brightness_set = mtk_flashlight_brightness_set,
+	.brightness_get = mtk_flashlight_brightness_get,
+	.brightness     = LED_OFF,
+};
+int32_t mtk_flashlight_create_classdev(struct platform_device *pdev)
+{
+	int32_t rc = 0;
+
+	rc = led_classdev_register(&pdev->dev, &pmic_flashlight_led);
+	if (rc) {
+		pr_err("Failed to register  led dev. rc = %d\n", rc);
+		return rc;
+	}
+	return 0;
+}
+
+int32_t mtk_torch_create_classdev(struct platform_device *pdev)
+{
+	int32_t rc = 0;
+
+	rc = led_classdev_register(&pdev->dev, &pmic_torch_led);
+	if (rc) {
+		pr_err("Failed to register  led dev. rc = %d\n", rc);
+		return rc;
+	}
+	return 0;
+}
+#endif
+#ifdef LED191_SYS_NODE
+static ssize_t led191_torch_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	unsigned int databuf =  0;
+	pr_info("%s : debug:%s", __func__, buf);
+	sscanf(buf, "%x", &databuf);
+
+	if ( databuf == 0 ) { // torch disable
+		g_flash_duty = 0;
+		led191_disable();
+	} else if ( databuf == 1) { //torch enable
+		g_flash_duty = TORCH_DUTY;
+		led191_enable();
+	}
+
+	return count;
+}
+static ssize_t led191_torch_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	ssize_t len = 0;
+	len += snprintf(buf + len, PAGE_SIZE - len, "%s : g_flash_duty : %d  \n",__func__, g_flash_duty);
+	return len;
+}
+static ssize_t led191_flash_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	unsigned int databuf =  0;
+	pr_info("%s : debug:%s", __func__, buf);
+	sscanf(buf, "%x", &databuf);
+
+	if ( databuf == 0 ) { // flash disable
+		g_flash_duty = 0;
+		led191_disable();
+	} else if ( databuf == 1) { //flash enable
+		g_flash_duty = TORCH_DUTY + 1;
+		led191_enable();
+	}
+	return count;
+}
+static ssize_t led191_flash_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	ssize_t len = 0;
+	len += snprintf(buf + len, PAGE_SIZE - len, "%s : g_flash_duty : %d  \n",__func__, g_flash_duty);
+	return len;
+}
+static DEVICE_ATTR(LED191_TORCH, 0664, led191_torch_show, led191_torch_store);
+static DEVICE_ATTR(LED191_FLASH, 0664, led191_flash_show, led191_flash_store);
+static struct attribute *flashlight_led191_attrs[ ] = {
+	&dev_attr_LED191_TORCH.attr,
+	&dev_attr_LED191_FLASH.attr,
+	NULL,
+};
+static int led191_sysfs_create_files(struct platform_device *pdev)
+{
+	int err = 0, i = 0;
+	for ( i = 0; flashlight_led191_attrs[i] != NULL; i++) {
+		err = sysfs_create_file(&pdev->dev.kobj, flashlight_led191_attrs[i]);
+		if ( err < 0) {
+			pr_err("%s: create file node fail err = %d\n", __func__, err);
+			return err;
+		}
+	}
+	return 0;
+}
+#endif
 static int led191_parse_dt(struct device *dev,
 		struct led191_platform_data *pdata)
 {
@@ -378,7 +546,7 @@ static int led191_probe(struct platform_device *pdev)
 	int err;
 	int i;
 
-	pr_debug("Probe start.\n");
+	pr_debug("%s Probe start.\n",__func__);
 
 	/* init pinctrl */
 	if (led191_pinctrl_init(pdev)) {
@@ -411,6 +579,14 @@ static int led191_probe(struct platform_device *pdev)
 	/* init chip hw */
 	led191_chip_init();
 
+	#ifdef LED191_SYS_NODE
+	led191_sysfs_create_files(pdev);
+	#endif
+	#ifdef LED_SYSTEM
+	mtk_flashlight_create_classdev(pdev);
+	mtk_torch_create_classdev(pdev);
+	#endif
+
 	/* clear usage count */
 	use_count = 0;
 
@@ -430,10 +606,11 @@ static int led191_probe(struct platform_device *pdev)
 		}
 	}
 
-	pr_debug("Probe done.\n");
+	pr_debug("%s Probe done.\n",__func__);
 
 	return 0;
 err:
+	pr_debug("%s Probe fail.\n",__func__);
 	return err;
 }
 
@@ -532,4 +709,3 @@ module_exit(flashlight_led191_exit);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Simon Wang <Simon-TCH.Wang@mediatek.com>");
 MODULE_DESCRIPTION("MTK Flashlight LED191 GPIO Driver");
-

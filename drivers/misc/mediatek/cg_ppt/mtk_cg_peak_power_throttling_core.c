@@ -1146,6 +1146,63 @@ static ssize_t gpu_passive_flag_show(struct device *dev, struct device_attribute
 	return sprintf(buf, "%d\n", ioread32(&g_dlpt_sram_layout_ptr->cgsm_info.gacboost_hint));
 }
 
+//TODO: temperary
+/*
+ * -----------------------------------------------
+ * device node: thermal pre-throttle (temperary)
+ * -----------------------------------------------
+ */
+
+/*
+ * ...................................
+ *
+ * ...................................
+ */
+static ssize_t opt1_show(struct device *dev, struct device_attribute *attr,
+			      char *buf)
+{
+	return sprintf(buf, "%d\n", ioread32((const void *)THERMAL_GPU_PRETHROTTLE_TEMP));
+}
+
+static ssize_t opt1_store(struct device *dev,
+			       struct device_attribute *attr, const char *buf,
+			       size_t count)
+{
+	int input;
+
+	if (kstrtoint(buf, 10, &input) != 0)
+		return count;
+
+	iowrite32(input, (void *)THERMAL_GPU_PRETHROTTLE_TEMP);
+
+	return count;
+}
+
+/*
+ * ...................................
+ *
+ * ...................................
+ */
+static ssize_t opt2_show(struct device *dev, struct device_attribute *attr,
+			      char *buf)
+{
+	return sprintf(buf, "%d\n", ioread32((const void *)THERMAL_GPU_PRETHROTTLE_OPP));
+}
+
+static ssize_t opt2_store(struct device *dev,
+			       struct device_attribute *attr, const char *buf,
+			       size_t count)
+{
+	int input;
+
+	if (kstrtoint(buf, 10, &input) != 0)
+		return count;
+
+	iowrite32(input, (void *)THERMAL_GPU_PRETHROTTLE_OPP);
+
+	return count;
+}
+
 
 /*
  * -----------------------------------------------
@@ -1166,6 +1223,12 @@ static DEVICE_ATTR_RO(gacboost_hint);
 static DEVICE_ATTR_RO(gpu_passive_flag);
 
 
+//TODO:temperary for kol
+static DEVICE_ATTR_RW(opt1);
+static DEVICE_ATTR_RW(opt2);
+
+
+
 static struct attribute *sysfs_attrs[] = {
 	&dev_attr_mode.attr,
 	&dev_attr_hr_enable.attr,
@@ -1179,6 +1242,10 @@ static struct attribute *sysfs_attrs[] = {
 	&dev_attr_gacboost_mode.attr,
 	&dev_attr_gacboost_hint.attr,
 	&dev_attr_gpu_passive_flag.attr,
+	//TODO:temperary for kol
+	&dev_attr_opt1.attr,
+	&dev_attr_opt2.attr,
+	//TODO
 	NULL,
 };
 

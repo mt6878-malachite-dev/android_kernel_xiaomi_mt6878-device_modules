@@ -18,7 +18,7 @@
 #include <linux/ktime.h>
 #include <linux/ctype.h>
 #include "mtk_gauge.h"
-
+#include "charger_partition.h"
 
 #define NETLINK_FGD 26
 #define UNIT_TRANS_10	10
@@ -44,6 +44,53 @@
 #define MAX_PROP_NAME_LEN 50
 
 #define BMLOG_DEFAULT_LEVEL BMLOG_DEBUG_LEVEL
+
+/* smart chg low fast */
+#define	LOW_FAST_ENTRY_SOC			20
+#define	LOW_FAST_EXIT_SOC			32
+#define LOW_FAST_NOT_RESTART_SOC	30
+#define LOW_FAST_HYST_TEMP_LOW		380
+#define LOW_FAST_HYST_TEMP_HIGH		390
+#define	LOW_FAST_SCREEN_TIMEOUT_MS	10000
+
+/* smart chg for smart charge engine */
+enum smart_chg_functype{
+	SMART_CHG_STATUS_FLAG		= 0,
+	SMART_CHG_FEATURE_MIN_NUM	= 1,
+	SMART_CHG_NAVIGATION		= 1,
+	SMART_CHG_OUTDOOR_CHARGE	= 2,
+	SMART_CHG_BATT_LOW_FAST		= 3,
+	SMART_CHG_ENDURANCE_PRO		= 4,
+	SMART_CHG_WLS_SUPER_CHG		= 5,
+	SMART_CHG_SENSING_CHG		= 6,
+	SMART_CHG_EXTREME_COLD_CHG	= 8,
+
+	/* add new func here */
+
+	SMART_CHG_FEATURE_MAX_NUM = 15,
+};
+
+enum smart_chg_low_fast_flat {
+	 /* display screen status */
+	 DISPLAY_SCREEN_OFF,
+	 DISPLAY_SCREEN_ON,
+	 DISPLAY_SCREEN_AOD,
+};
+/* end of smart chg */
+
+#define FFC_SMOOTH_LEN			4
+#define RECHARGE_UISOC 97
+
+struct ffc_smooth {
+	int curr_lim;
+	int time;
+};
+
+enum smooth_flag {
+	LOW_FAST_NORMAL = 0,
+	LOW_FAST_IN = 1,
+	LOW_FAST_SWITCH = 2,
+};
 
 #define bm_err(fmt, args...)   \
 do {\
@@ -102,6 +149,13 @@ do {\
 	.get	= _name##_get,						\
 }
 
+#define BAT_SYSFS_FIELD_STRING_RO(_name, _prop)	\
+{			\
+	.attr   = __ATTR(_name, 0444, bat_sysfs_show, bat_sysfs_store),\
+	.prop   = _prop,				  \
+	.getbuf	= _name##_getbuf,						\
+}
+
 #define BAT_SYSFS_FIELD_WO(_name, _prop)	\
 {								   \
 	.attr	= __ATTR(_name, 0200, bat_sysfs_show, bat_sysfs_store),\
@@ -121,7 +175,47 @@ enum battery_property {
 	BAT_PROP_INIT_DONE,
 	BAT_PROP_FG_RESET,
 	BAT_PROP_LOG_LEVEL,
+	BAT_PROP_CHARGE_EOC,
+	BAT_PROP_CHIP_OK,
+	BAT_PROP_NIGHT_CHARGING,
+	BAT_PROP_INPUT_SUSPEND,
+	BAT_PROP_SMART_BATT,
+	BAT_PROP_SHIPMODE,
+	BAT_PROP_SMART_CHG,
+#ifdef CONFIG_FACTORY_BUILD
+	BAT_PROP_ATO_SOC_USER_CONTROL,
+#endif
+	BAT_PROP_STOPCHARGING_TEST,
+	BAT_PROP_STARTCHARGING_TEST,
+	BAT_PROP_BATT_ID,
+	BAT_PROP_SMART_FV,
+	USB_PROP_CHARGER_PARTITION_TEST,
+	USB_PROP_CHARGER_PARTITION_POWEROFFMODE,
+	BAT_PROP_SOH_SN,
+	BAT_PROP_CALC_RVALUE,
+#if defined(CONFIG_RUST_DETECTION)
+	BAT_PROP_OTG_UI_SUPPORT,
+	BAT_PROP_CID_STATUS,
+	BAT_PROP_CC_TOGGLE,
+	BAT_PROP_DP,
+	BAT_PROP_DM,
+	BAT_PROP_SBU1,
+	BAT_PROP_SBU2,
+	BAT_PROP_LPD_UPDATE_EN,
+	BAT_PROP_MOISTURE_DETECTION_EN,
+	BAT_PROP_DIS_UART,
+	BAT_PROP_MOISTURE_DETECTION_STATUS,
+#endif
 };
+
+enum {
+	SWD_5500MAH = 0,
+	NVT_5500MAH,
+	SWD_5110MAH,
+	NVT_5110MAH,
+	UNKNOW_BATT = 0xff,
+};
+void update_step_jeita_fcc(int batt_id);
 
 enum property_control_data {
 	CONTROL_GAUGE_PROP_BATTERY_EXIST,
@@ -157,6 +251,9 @@ struct battery_data {
 	struct power_supply_desc psd;
 	struct power_supply_config psy_cfg;
 	struct power_supply *psy;
+	struct power_supply_desc bms_psd;
+	struct power_supply_config bms_psy_cfg;
+	struct power_supply *bms_psy;
 	struct power_supply *chg_psy;
 	struct notifier_block battery_nb;
 	int bat_status;
@@ -167,6 +264,7 @@ struct battery_data {
 	/* Add for Battery Service */
 	int bat_batt_vol;
 	int bat_batt_temp;
+	int bat_current;
 };
 
 struct VersionControl {
@@ -362,6 +460,13 @@ enum charge_sel {
 	CHARGE_R2,
 	CHARGE_R3,
 	CHARGE_R4,
+};
+
+struct smart_chg {
+	bool en_ret;
+	bool use_fake_func_val;
+	int active_status;
+	int func_val;
 };
 
 struct fuelgauge_charger_struct {
@@ -667,7 +772,6 @@ struct fuel_gauge_custom_data {
 	/* log_level */
 	int daemon_log_level;
 	int record_log;
-
 };
 
 struct fgd_cmd_param_t_custom {
@@ -871,7 +975,7 @@ struct irq_controller {
 #define SHUTDOWN_TIME 40
 #define AVGVBAT_ARRAY_SIZE 30
 #define INIT_VOLTAGE 3450
-#define BATTERY_SHUTDOWN_TEMPERATURE 60
+#define BATTERY_SHUTDOWN_TEMPERATURE 58
 
 struct shutdown_condition {
 	bool is_overheat;
@@ -962,6 +1066,7 @@ struct mtk_battery {
 	struct sock *mtk_battery_sk;
 
 	struct mtk_battery_algo algo;
+	struct mtk_charger *info;
 
 	u_int fgd_pid;
 
@@ -987,6 +1092,7 @@ struct mtk_battery {
 	bool disableGM30;
 	bool ntc_disable_nafg;
 	bool cmd_disable_nafg;
+	bool shipmode_flag;
 
 	/*battery plug in out*/
 	int chr_type;
@@ -1040,6 +1146,11 @@ struct mtk_battery {
 	struct timespec64 chr_full_handler_time;
 	bool b_EOC;
 
+	bool authenticate;
+	int batt_id;
+
+	int soh;
+	int ui_soh;
 	/* battery temperature interrupt */
 	int bat_tmp_int_gap;
 	int bat_tmp_c_int_gap;
@@ -1119,6 +1230,7 @@ struct mtk_battery {
 	/* aging */
 	bool is_reset_aging_factor;
 	int aging_factor;
+	int new_aging;
 
 	/* bootmode */
 	u32 bootmode;
@@ -1149,12 +1261,44 @@ struct mtk_battery {
 	int (*resume)(struct mtk_battery *gm);
 
 	int log_level;
+	int thermal_level;
+	int diff_fv_val;
+	bool night_charging;
+	bool extreme_cold_chg_flag;
+	int extreme_cold_temp;
+
+#if defined(CONFIG_RUST_DETECTION)
+	bool control_cc_toggle;
+	int lpd_update_en;
+	int lpd_en_manual;
+	int dis_uart;
+#endif
+
 	/* low bat bound */
 	int bat_voltage_low_bound;
 	int low_tmp_bat_voltage_low_bound;
+	/*  smart chg array.Smart charge engine feature.
+		smart_chg[0] is the flag member for smart_chg.
+		smart_chg[0].en_ret == 0, means writing successful, otherwise failed.
+		smart_chg[0].active_status is the en_ret val of smart_chg[1 ~ SMART_CHG_FEATURE_MAX_NUM].
+		smart_chg[0].func_val are not used, reserved.
+		smart_chg[1 ~ SMART_CHG_FEATURE_MAX_NUM] represent bit1-bit15 func type.
+		smart_chg[1 ~ SMART_CHG_FEATURE_MAX_NUM].en_ret is the enable status that top layer set.
+		smart_chg[1 ~ SMART_CHG_FEATURE_MAX_NUM].active_status is the actual active status in kernel,
+			because sometime kernel may turn off the functype itself thouth top layer set the functype enable .
+		smart_chg[1 ~ SMART_CHG_FEATURE_MAX_NUM].func_val is the val that top layer set. */
+	struct smart_chg smart_chg[SMART_CHG_FEATURE_MAX_NUM + 1];
 
 	int dynamic_shutdown_cond;
 	int bob_exist;
+
+#ifdef CONFIG_FACTORY_BUILD
+	int ato_soc_user_control;
+#endif
+
+	bool shutdown_delay;
+	enum smooth_flag s_flag;
+	int smart_fv;
 };
 
 struct mtk_battery_sysfs_field_info {
@@ -1237,4 +1381,9 @@ extern void disable_all_irq(struct mtk_battery *gm);
 /*mtk_battery_daemon.c*/
 extern void wake_up_bat_irq_controller(struct irq_controller *irq_ctrl, int flags);
 /*mtk_battery_daemon.c end*/
+
+extern int batt_auth_get_batt_sn(u8 *soh_sn);
+extern int batt_auth_get_ui_soh(u8 *ui_soh_data, int len);
+extern int batt_auth_set_ui_soh(u8 *ui_soh_data, int len, int raw_soh);
+
 #endif /* __MTK_BATTERY_INTF_H__ */

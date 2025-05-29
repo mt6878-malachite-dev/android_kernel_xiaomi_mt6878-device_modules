@@ -390,7 +390,7 @@ static int Get_Input_Addr_From_DMABUF(struct PDA_Data_t *pda_PdaConfig)
 	nAddress_Image = (unsigned long) sg_dma_address(g_image_mmu.sgt->sgl);
 
 	// Left image buffer
-	g_Address_LI[0] = nAddress_Image;
+	g_Address_LI[0] = nAddress_Image + pda_PdaConfig->address_offset;
 	pda_PdaConfig->PDA_PDAI_P1_BASE_ADDR = (unsigned int)g_Address_LI[0];
 	for (i = 0; i < g_PDA_quantity; i++) {
 		PDA_WR32(PDA_devs[i].m_pda_base + PDA_PDAI_P1_BASE_ADDR_MSB_REG,

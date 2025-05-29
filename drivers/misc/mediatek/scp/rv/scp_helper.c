@@ -656,17 +656,6 @@ static void scp_A_notify_ws(struct work_struct *ws)
 	while (IS_ERR_OR_NULL((void const *) scpreg.scpsys))
 		msleep(100);
 
-#if SCP_RECOVERY_SUPPORT
-	if (atomic_read(&scp_reset_status) == RESET_STATUS_START_WDT) {
-		pr_notice("[SCP] recovery fail, recovery again\n");
-		atomic_set(&scp_reset_status, RESET_STATUS_START);
-		scp_send_reset_wq(RESET_TYPE_WDT);
-		return;
-	}
-	pr_notice("[SCP] recovery success\n");
-	atomic_set(&scp_reset_status, RESET_STATUS_STOP);
-#endif
-
 	if (scp_notify_flag) {
 		scp_recovery_flag[SCP_A_ID] = SCP_A_RECOVERY_OK;
 
@@ -731,10 +720,20 @@ static void scp_A_notify_ws(struct work_struct *ws)
 	if (scp_dvfs_feature_enable())
 		scp_resource_req(SCP_REQ_RELEASE);
 
-	__pm_relax(scp_reset_lock);
-
 	/* register scp dvfs*/
+	msleep(2000);
+	__pm_relax(scp_reset_lock);
 	scp_register_feature(RTOS_FEATURE_ID);
+#if SCP_RECOVERY_SUPPORT
+	if (atomic_read(&scp_reset_status) == RESET_STATUS_START_WDT) {
+		pr_notice("[SCP] recovery fail, recovery again\n");
+		atomic_set(&scp_reset_status, RESET_STATUS_START);
+		scp_send_reset_wq(RESET_TYPE_WDT);
+	} else {
+		pr_notice("[SCP] recovery success\n");
+		atomic_set(&scp_reset_status, RESET_STATUS_STOP);
+	}
+#endif
 }
 
 
@@ -1759,11 +1758,7 @@ static void scp_control_feature(enum feature_id id, bool enable)
 
 	/* send request only when scp is not down */
 	if (scp_ready[SCP_A_ID]) {
-		if (scp_current_freq != scp_expected_freq
-			|| sap_expected_freq != last_sap_expected_freq
-		) {
 			/* set scp freq. */
-
 			if (scp_dvfs_feature_enable())
 				ret = scp_request_freq();
 
@@ -1771,7 +1766,7 @@ static void scp_control_feature(enum feature_id id, bool enable)
 				pr_notice("[SCP] %s: req_freq fail\n", __func__);
 				WARN_ON(1);
 			}
-		}
+
 	} else {
 		pr_notice("[SCP]Not send SCP DVFS request because SCP is down\n");
 		WARN_ON(1);
@@ -1795,6 +1790,8 @@ EXPORT_SYMBOL_GPL(scp_deregister_feature);
 /*scp sensor type register*/
 int sensor_control_scp(enum feature_id id, int freq)
 {
+	pr_debug("[SCP]feature_id:%d, freq:%d\n", id, freq);
+
 	if (id != SENS_FEATURE_ID) {
 		pr_debug("[SCP]register sensor id err");
 		return -EINVAL;

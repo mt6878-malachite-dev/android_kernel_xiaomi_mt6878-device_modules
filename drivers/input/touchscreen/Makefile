@@ -6,8 +6,7 @@ obj-m += tui-common.o
 TOUCH_LISTS := $(subst ",,$(CONFIG_TOUCHSCREEN_MTK_TOUCH))
 obj-y += $(foreach TOUCH,$(TOUCH_LISTS),$(TOUCH)/)
 
-ifneq ($(wildcard $(srctree)/$(src)/k6985v1_64_alpha),)
-obj-$(CONFIG_TOUCHSCREEN_MT6985_ALPHA_SUPPORT) += k6985v1_64_alpha/
-endif
 
-obj-$(CONFIG_TOUCHSCREEN_NT36xxx_HOSTDL_SPI) += NT36532/
+#obj-$(CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE) += xiaomi/
+obj-$(CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE_COMMON) += xiaomi_touch/
+obj-$(CONFIG_TOUCHSCREEN_GET_LCMNAME) += tp_get_lcm_name/

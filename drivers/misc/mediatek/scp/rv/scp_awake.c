@@ -92,7 +92,7 @@ int scp_awake_lock(void *_scp_id)
 	count = 0;
 	while (++count != SCP_AWAKE_TIMEOUT) {
 #if SCP_RECOVERY_SUPPORT
-		if (atomic_read(&scp_reset_status) != RESET_STATUS_STOP) {
+		if (atomic_read(&scp_reset_status) == RESET_STATUS_START) {
 			pr_notice("%s: resetting scp, break\n", __func__);
 			break;
 		}
@@ -123,7 +123,7 @@ int scp_awake_lock(void *_scp_id)
 	spin_unlock_irqrestore(&scp_awake_spinlock, spin_flags);
 
 	if (ret == -1) {
-		pr_notice("%s: awake %s fail.., %dus\n", __func__, core_id, count*10);
+		pr_notice("%s: awake %s fail..\n", __func__, core_id);
 #if SCP_RECOVERY_SUPPORT
 		/*
 		 * It's OK without critical section for below code flow,
@@ -210,7 +210,7 @@ int scp_awake_unlock(void *_scp_id)
 	count = 0;
 	while (++count != SCP_AWAKE_TIMEOUT) {
 #if SCP_RECOVERY_SUPPORT
-		if (atomic_read(&scp_reset_status) != RESET_STATUS_STOP) {
+		if (atomic_read(&scp_reset_status) == RESET_STATUS_START) {
 			pr_notice("%s: scp is being reset, break\n", __func__);
 			break;
 		}
@@ -246,7 +246,7 @@ int scp_awake_unlock(void *_scp_id)
 	spin_unlock_irqrestore(&scp_awake_spinlock, spin_flags);
 
 	if (ret == -1) {
-		pr_notice("%s: awake %s fail.., %dus\n", __func__, core_id, count*10);
+		pr_notice("%s: awake %s fail..\n", __func__, core_id);
 		WARN_ON(1);
 #if SCP_RECOVERY_SUPPORT
 		/*

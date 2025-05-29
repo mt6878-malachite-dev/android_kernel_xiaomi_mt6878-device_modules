@@ -26,7 +26,7 @@
 #include "mtk_drm_helper.h"
 #include "platform/mtk_drm_platform.h"
 #include "mtk_disp_pq_helper.h"
-
+#include "mi_disp/mi_dsi_display.h"
 #ifdef CONFIG_LEDS_MTK_MODULE
 #define CONFIG_LEDS_BRIGHTNESS_CHANGED
 #include <linux/leds-mtk.h>
@@ -771,7 +771,7 @@ int mtk_ccorr_cfg_set_ccorr(struct mtk_ddp_comp *comp,
 		}
 	}
 
-	if (pq_data->new_persist_property[DISP_PQ_CCORR_SILKY_BRIGHTNESS]) {
+	if (pq_data->new_persist_property[DISP_PQ_CCORR_SILKY_BRIGHTNESS] || pq_data->new_persist_property[DISP_PQ_MI_SOFT_BRIGHTNESS]) {
 
 		if ((ccorr_config->silky_bright_flag) == 1 &&
 			ccorr_config->FinalBacklight != 0) {
@@ -816,7 +816,7 @@ int mtk_drm_ioctl_set_ccorr_impl(struct mtk_ddp_comp *comp, void *data)
 	else
 		primary_data->disp_ccorr_without_gamma = CCORR_BYASS_GAMMA;
 
-	if (pq_data->new_persist_property[DISP_PQ_CCORR_SILKY_BRIGHTNESS]) {
+	if (pq_data->new_persist_property[DISP_PQ_CCORR_SILKY_BRIGHTNESS] || pq_data->new_persist_property[DISP_PQ_MI_SOFT_BRIGHTNESS]) {
 
 		ret = mtk_crtc_user_cmd(crtc, comp, SET_CCORR, data);
 
@@ -900,19 +900,26 @@ int led_brightness_changed_event_to_pq(struct notifier_block *nb, unsigned long 
 	switch (event) {
 	case LED_BRIGHTNESS_CHANGED:
 		trans_level = led_conf->cdev.brightness;
-
+#if CONFIG_MI_DISP
+			mi_disp_feature_event_notify_by_type(mi_get_disp_id("primary"), MI_DISP_EVENT_BACKLIGHT, sizeof(trans_level), trans_level);
+#endif
 		if (led_conf->led_type == LED_TYPE_ATOMIC)
 			break;
 
 		disp_pq_notify_backlight_changed(comp, trans_level);
+
 		DDPINFO("%s: brightness changed: %d(%d)\n",
 			__func__, trans_level, led_conf->cdev.brightness);
 		break;
 	case LED_STATUS_SHUTDOWN:
+#if CONFIG_MI_DISP
+			mi_disp_feature_event_notify_by_type(mi_get_disp_id("primary"), MI_DISP_EVENT_BACKLIGHT, sizeof(trans_level), 0);
+#endif
 		if (led_conf->led_type == LED_TYPE_ATOMIC)
 			break;
 
 		disp_pq_notify_backlight_changed(comp, 0);
+
 		break;
 	case LED_TYPE_CHANGED:
 		pr_info("[leds -> ccorr] led type changed: %d", led_conf->led_type);

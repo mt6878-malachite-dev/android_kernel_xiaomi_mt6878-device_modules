@@ -4395,8 +4395,7 @@ static void cmdq_pkt_auto_release_destroy_work(struct work_struct *work)
 
 	cmdq_pkt_auto_release_work(work);
 	CMDQ_LOG("in auto release destroy task:%p\n", handle);
-	if (READ_ONCE(handle->pkt->cmplt.done) == 0)
-		cmdq_task_destroy(handle);
+	cmdq_task_destroy(handle);
 }
 
 

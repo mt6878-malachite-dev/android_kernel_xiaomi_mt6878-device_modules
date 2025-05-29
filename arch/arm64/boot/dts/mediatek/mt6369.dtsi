@@ -66,9 +66,9 @@
 				channel = <AUXADC_HPOFS_CAL>;
 				avg-num = <256>;
 			};
-			vin1-open {
+			vin1-100k {
 				channel = <AUXADC_VIN1>;
-				pures = <ADC_PURES_OPEN>;
+				pures = <ADC_PURES_100K>;
 			};
 			vin2-open {
 				channel = <AUXADC_VIN2>;
@@ -225,6 +225,7 @@
 				regulator-max-microvolt = <2100000>;
 				regulator-enable-ramp-delay = <680>;
 				regulator-allowed-modes = <0 2>;
+				regulator-always-on;
 			};
 			mt6369_vefuse: vefuse {
 				regulator-compatible = "VEFUSE";

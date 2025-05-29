@@ -15,7 +15,6 @@
 #include "ufshcd-priv.h"
 #include "ufs-mediatek.h"
 #include "ufs-mediatek-dbg.h"
-
 /**
  * ufs_mtk_query_ioctl - perform user read queries
  * @hba: per-adapter instance

@@ -76,17 +76,9 @@
 				channel = <AUXADC_VIN3>;
 				pures = <ADC_PURES_100K>;
 			};
-			vin3-open {
-				channel = <AUXADC_VIN3>;
-				pures = <ADC_PURES_OPEN>;
-			};
 			vin4-100k {
 				channel = <AUXADC_VIN4>;
 				pures = <ADC_PURES_100K>;
-			};
-			vin4-open {
-				channel = <AUXADC_VIN4>;
-				pures = <ADC_PURES_OPEN>;
 			};
 			vin5-100k {
 				channel = <AUXADC_VIN5>;
@@ -138,7 +130,7 @@
 			};
 
 			home {
-				linux,keycodes = <115>;
+				linux,keycodes = <114>;
 			};
 		};
 

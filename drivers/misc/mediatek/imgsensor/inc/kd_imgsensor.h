@@ -645,6 +645,59 @@
 #define SENSOR_DRVNAME_GC13A2_MIPI_RAW          "gc13a2_mipi_raw"
 #define SENSOR_DRVNAME_S5KGN9SP_MIPI_RAW        "s5kgn9sp_mipi_raw"
 
+/*O16 add start*/
+#define MALACHITES5KHP3WIDE_SENSOR_ID                      0x1b73
+#define SENSOR_DRVNAME_MALACHITES5KHP3WIDE_MIPI_RAW        "malachites5khp3wide_mipi_raw"
+#define MALACHITEIMX882WIDE_SENSOR_ID                      0x8202
+#define SENSOR_DRVNAME_MALACHITEIMX882WIDE_MIPI_RAW        "malachiteimx882wide_mipi_raw"
+#define MALACHITEOV20BFRONT_SENSOR_ID                      0x2042
+#define SENSOR_DRVNAME_MALACHITEOV20BFRONT_MIPI_RAW        "malachiteov20bfront_mipi_raw"
+#define MALACHITEIMX355ULTRA_SENSOR_ID                     0x0355
+#define SENSOR_DRVNAME_MALACHITEIMX355ULTRA_MIPI_RAW       "malachiteimx355ultra_mipi_raw"
+#define MALACHITEOV02B10MACRO_SENSOR_ID                    0x002b
+#define SENSOR_DRVNAME_MALACHITEOV02B10MACRO_MIPI_RAW      "malachiteov02b10macro_mipi_raw"
+/*O16 add end*/
+/*XIAOMI ADD START*/
+#define DUCHAMPOV64B40WIDE_SENSOR_ID               0x5664
+#define SENSOR_DRVNAME_DUCHAMPOV64B40WIDE_MIPI_RAW "duchampov64b40wide_mipi_raw"
+#define DUCHAMPOV16A1QFRONT_SENSOR_ID                 0x1641
+#define SENSOR_DRVNAME_DUCHAMPOV16A1QFRONT_MIPI_RAW  "duchampov16a1qfront_mipi_raw"
+#define DUCHAMPSC202PCSMACRO_SENSOR_ID                 0xEB52
+#define SENSOR_DRVNAME_DUCHAMPSC202PCSMACRO_MIPI_RAW  "duchampsc202pcsmacro_mipi_raw"
+#define DUCHAMPOV08D10ULTRA_SENSOR_ID               0x5608
+#define SENSOR_DRVNAME_DUCHAMPOV08D10ULTRA_MIPI_RAW "duchampov08d10ultra_mipi_raw"
+#define DUCHAMPGC16B3FRONT_SENSOR_ID                  0x16B3
+#define SENSOR_DRVNAME_DUCHAMPGC16B3FRONT_MIPI_RAW   "duchampgc16b3front_mipi_raw"
+
+#define ROTHKOIMX906WIDE_SENSOR_ID               0x0906
+#define SENSOR_DRVNAME_ROTHKOIMX906WIDE_MIPI_RAW "rothkoimx906wide_mipi_raw"
+#define ROTHKOOV20BFRONT_SENSOR_ID                  0x2042
+#define SENSOR_DRVNAME_ROTHKOOV20BFRONT_MIPI_RAW   "rothkoov20bfront_mipi_raw"
+#define ROTHKOS5KKD1FRONT_SENSOR_ID                  0x4841
+#define SENSOR_DRVNAME_ROTHKOS5KKD1FRONT_MIPI_RAW   "rothkos5kkd1front_mipi_raw"
+#define ROTHKOIMX355ULTRA_SENSOR_ID                0x0355
+#define SENSOR_DRVNAME_ROTHKOIMX355ULTRA_MIPI_RAW  "rothkoimx355ultra_mipi_raw"
+#define ROTHKOGC02M1MACRO_SENSOR_ID                0x02E0
+#define SENSOR_DRVNAME_ROTHKOGC02M1MACRO_MIPI_RAW  "rothkogc02m1macro_mipi_raw"
+#define ROTHKOOV13B10ULTRA_SENSOR_ID                0x0D42
+#define SENSOR_DRVNAME_ROTHKOOV13B10ULTRA_MIPI_RAW  "rothkoov13b10ultra_mipi_raw"
+#define ROTHKOOV50H40WIDE_SENSOR_ID                  0x5650
+#define SENSOR_DRVNAME_ROTHKOOV50H40WIDE_MIPI_RAW   "rothkoov50h40wide_mipi_raw"
+#define ROTHKOS5KJN1TELE_SENSOR_ID                   0x38E1
+#define SENSOR_DRVNAME_ROTHKOS5KJN1TELE_MIPI_RAW    "rothkos5kjn1tele_mipi_raw"
+#define DUCHAMPOV50EWIDE_SENSOR_ID                  0x5650
+#define SENSOR_DRVNAME_DUCHAMPOV50EWIDE_MIPI_RAW   "duchampov50ewide_mipi_raw"
+
+#define DEGASIMX906WIDE_SENSOR_ID               0x0906
+#define SENSOR_DRVNAME_DEGASIMX906WIDE_MIPI_RAW "degasimx906wide_mipi_raw"
+#define DEGASS5KKD1FRONT_SENSOR_ID                  0x4841
+#define SENSOR_DRVNAME_DEGASS5KKD1FRONT_MIPI_RAW   "degass5kkd1front_mipi_raw"
+#define DEGASS5KJN1TELE_SENSOR_ID                   0x38E1
+#define SENSOR_DRVNAME_DEGASS5KJN1TELE_MIPI_RAW    "degass5kjn1tele_mipi_raw"
+#define DEGASOV13B10ULTRA_SENSOR_ID                0x0D42
+#define SENSOR_DRVNAME_DEGASOV13B10ULTRA_MIPI_RAW  "degasov13b10ultra_mipi_raw"
+/*XIAOMI ADD END*/
+
 /******************************************************************************
  *
  ******************************************************************************/

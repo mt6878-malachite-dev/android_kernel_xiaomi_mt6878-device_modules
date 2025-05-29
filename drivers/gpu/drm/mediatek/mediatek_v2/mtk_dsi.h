@@ -24,6 +24,11 @@
 #include "mtk-cmdq-ext.h"
 #endif
 
+#ifdef CONFIG_MI_DISP
+#include "mi_disp/mi_dsi_panel.h"
+#include "mi_disp/mi_dsi_panel_count.h"
+#endif
+
 struct t_condition_wq {
 	wait_queue_head_t wq;
 	atomic_t condition;
@@ -147,6 +152,24 @@ struct mtk_dsi {
 	struct mtk_drm_esd_ctx *esd_ctx;
 	unsigned int cnt;
 	unsigned int skip_vblank;
+#if CONFIG_MI_DISP
+	bool fod_backlight_flag;
+	bool fod_hbm_flag;
+	bool normal_hbm_flag;
+	bool dc_flag;
+	uint32_t dc_status;
+	struct mutex dsi_lock;
+	struct mi_dsi_panel_cfg mi_cfg;
+	int panel_event;
+	struct completion bl_wait_completion;
+	struct completion aod_wait_completion;
+	struct delayed_work gir_off_delayed_work;
+	const char * display_type;
+	bool need_fod_animal_in_normal;
+#endif
+#ifdef CONFIG_MI_DISP_FOD_SYNC
+	struct mi_layer_state mi_layer_state;
+#endif
 	unsigned int force_resync_after_idle;
 	unsigned int mode_switch_delay;
 	bool set_partial_update;

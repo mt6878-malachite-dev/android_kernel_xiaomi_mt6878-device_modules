@@ -1643,6 +1643,7 @@ void mtk_get_gear_indicies(struct task_struct *p, int *order_index, int *end_ind
 	if (num_sched_clusters <= 1)
 		goto out;
 
+
 	/* gear_start's range -1~num_sched_clusters */
 	if (ghts->gear_start > num_sched_clusters || ghts->gear_start < -1)
 		goto out;
@@ -1727,7 +1728,6 @@ static void mtk_find_best_candidates(struct cpumask *candidates, struct task_str
 	int order_index = fbc_params->order_index;
 	int end_index = fbc_params->end_index;
 	int reverse = fbc_params->reverse;
-
 	num_vip = prev_min_num_vip = min_num_vip = UINT_MAX;
 #if IS_ENABLED(CONFIG_MTK_SCHED_VIP_TASK)
 	vts = &((struct mtk_task *) p->android_vendor_data1)->vip_task;
@@ -1976,6 +1976,7 @@ void mtk_find_energy_efficient_cpu(void *data, struct task_struct *p, int prev_c
 	compute_effective_softmask(p, &latency_sensitive, &effective_softmask);
 
 	pd = rcu_dereference(rd->pd);
+
 	if (!pd || READ_ONCE(rd->overutilized)) {
 		select_reason = LB_FAIL;
 		rcu_read_unlock();

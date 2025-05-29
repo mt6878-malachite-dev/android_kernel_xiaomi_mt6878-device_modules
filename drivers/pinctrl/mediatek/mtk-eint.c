@@ -512,7 +512,7 @@ static void mtk_eint_irq_handler(struct irq_desc *desc)
 					 * Clear soft-irq in case we raised it last
 					 * time.
 					 */
-					mtk_eint_soft_clr(eint, eint_num);
+//					mtk_eint_soft_clr(eint, eint_num);
 
 					start_level =
 					eint->gpio_xlate->get_gpio_state(eint->pctl,
@@ -530,6 +530,8 @@ static void mtk_eint_irq_handler(struct irq_desc *desc)
 					 */
 					if (start_level != curr_level)
 						mtk_eint_soft_set(eint, eint_num);
+					/* Clear soft-irq here to avoid pending=0/soft=1 */
+					mtk_eint_soft_clr(eint, eint_num);
 				}
 
 				if (eint->pins[eint_num].debounce)

@@ -452,6 +452,10 @@
 		/* reserved for overlay by odm */
 	};
 
+        nfc: nfc {
+
+        };
+
 	uarthub: uarthub {
 		compatible = "mediatek,mt6878-uarthub";
 		uarthub-disable = <1>;
@@ -1108,6 +1112,526 @@
 			<125000 2522>;
 	};
 
+	tboard_thermistor4: thermal-ntc4 {
+		compatible = "mediatek,mt6685-tia-ntc";
+		#thermal-sensor-cells = <0>;
+ 		io-channels = <&pmic_adc AUXADC_VIN3>;
+                io-channel-names = "Charger_NTC";
+		temperature-lookup-table =
+			<(-40000) 4397119>,
+			<(-39000) 4092874>,
+			<(-38000) 3811717>,
+			<(-37000) 3551749>,
+			<(-36000) 3311236>,
+			<(-35000) 3088599>,
+			<(-34000) 2882396>,
+			<(-33000) 2691310>,
+			<(-32000) 2514137>,
+			<(-31000) 2349778>,
+			<(-30000) 2197225>,
+			<(-29000) 2055558>,
+			<(-28000) 1923932>,
+			<(-27000) 1801573>,
+			<(-26000) 1687773>,
+			<(-25000) 1581881>,
+			<(-24000) 1483100>,
+			<(-23000) 1391113>,
+			<(-22000) 1305413>,
+			<(-21000) 1225531>,
+			<(-20000) 1151037>,
+			<(-19000) 1081535>,
+			<(-18000) 1016661>,
+			<(-17000) 956080>,
+			<(-16000) 899481>,
+			<(-15000) 846579>,
+			<(-14000) 797111>,
+			<(-13000) 750834>,
+			<(-12000) 707524>,
+			<(-11000) 666972>,
+			<(-10000) 628988>,
+			<(-9000) 593342>,
+			<(-8000) 559931>,
+			<(-7000) 528602>,
+			<(-6000) 499212>,
+			<(-5000) 471632>,
+			<(-4000) 445772>,
+			<(-3000) 421480>,
+			<(-2000) 398652>,
+			<(-1000) 377193>,
+			<0 357012>,
+			<1000 338006>,
+			<2000 320122>,
+			<3000 303287>,
+			<4000 287434>,
+			<5000 272500>,
+			<6000 258426>,
+			<7000 245160>,
+			<8000 232649>,
+			<9000 220847>,
+			<10000 209710>,
+			<11000 199196>,
+			<12000 189268>,
+			<13000 179890>,
+			<14000 171027>,
+			<15000 162651>,
+			<16000 154726>,
+			<17000 147232>,
+			<18000 140142>,
+			<19000 133432>,
+			<20000 127080>,
+			<21000 121066>,
+			<22000 115368>,
+			<23000 109970>,
+			<24000 104852>,
+			<25000 100000>,
+			<26000 95398>,
+			<27000 91032>,
+			<28000 86889>,
+			<29000 82956>,
+			<30000 79222>,
+			<31000 75675>,
+			<32000 72306>,
+			<33000 69104>,
+			<34000 66061>,
+			<35000 63167>,
+			<36000 60415>,
+			<37000 57797>,
+			<38000 55306>,
+			<39000 52934>,
+			<40000 50677>,
+			<41000 48528>,
+			<42000 46482>,
+			<43000 44533>,
+			<44000 42675>,
+			<45000 40904>,
+			<46000 39213>,
+			<47000 37601>,
+			<48000 36063>,
+			<49000 34595>,
+			<50000 33195>,
+			<51000 31859>,
+			<52000 30584>,
+			<53000 29366>,
+			<54000 28203>,
+			<55000 27091>,
+			<56000 26028>,
+			<57000 25013>,
+			<58000 24042>,
+			<59000 23113>,
+			<60000 22224>,
+			<61000 21374>,
+			<62000 20560>,
+			<63000 19782>,
+			<64000 19036>,
+			<65000 18322>,
+			<66000 17640>,
+			<67000 16986>,
+			<68000 16360>,
+			<69000 15759>,
+			<70000 15184>,
+			<71000 14631>,
+			<72000 14100>,
+			<73000 13591>,
+			<74000 13103>,
+			<75000 12635>,
+			<76000 12187>,
+			<77000 11756>,
+			<78000 11343>,
+			<79000 10946>,
+			<80000 10565>,
+			<81000 10199>,
+			<82000 9847>,
+			<83000 9509>,
+			<84000 9184>,
+			<85000 8872>,
+			<86000 8572>,
+			<87000 8283>,
+			<88000 8005>,
+			<89000 7738>,
+			<90000 7481>,
+			<91000 7234>,
+			<92000 6997>,
+			<93000 6769>,
+			<94000 6548>,
+			<95000 6337>,
+			<96000 6132>,
+			<97000 5934>,
+			<98000 5744>,
+			<99000 5561>,
+			<100000 5384>,
+			<101000 5214>,
+			<102000 5051>,
+			<103000 4893>,
+			<104000 4741>,
+			<105000 4594>,
+			<106000 4453>,
+			<107000 4316>,
+			<108000 4184>,
+			<109000 4057>,
+			<110000 3934>,
+			<111000 3816>,
+			<112000 3701>,
+			<113000 3591>,
+			<114000 3484>,
+			<115000 3380>,
+			<116000 3281>,
+			<117000 3185>,
+			<118000 3093>,
+			<119000 3003>,
+			<120000 2916>,
+			<121000 2832>,
+			<122000 2751>,
+			<123000 2672>,
+			<124000 2596>,
+			<125000 2522>;
+	};
+
+	tboard_thermistor5: thermal-ntc5 {
+		compatible = "mediatek,mt6685-tia-ntc";
+		#thermal-sensor-cells = <0>;
+		io-channels = <&pmic_adc AUXADC_VIN4>;
+		io-channel-names = "Flash_LED_NTC";
+		temperature-lookup-table =
+			<(-40000) 4397119>,
+			<(-39000) 4092874>,
+			<(-38000) 3811717>,
+			<(-37000) 3551749>,
+			<(-36000) 3311236>,
+			<(-35000) 3088599>,
+			<(-34000) 2882396>,
+			<(-33000) 2691310>,
+			<(-32000) 2514137>,
+			<(-31000) 2349778>,
+			<(-30000) 2197225>,
+			<(-29000) 2055558>,
+			<(-28000) 1923932>,
+			<(-27000) 1801573>,
+			<(-26000) 1687773>,
+			<(-25000) 1581881>,
+			<(-24000) 1483100>,
+			<(-23000) 1391113>,
+			<(-22000) 1305413>,
+			<(-21000) 1225531>,
+			<(-20000) 1151037>,
+			<(-19000) 1081535>,
+			<(-18000) 1016661>,
+			<(-17000) 956080>,
+			<(-16000) 899481>,
+			<(-15000) 846579>,
+			<(-14000) 797111>,
+			<(-13000) 750834>,
+			<(-12000) 707524>,
+			<(-11000) 666972>,
+			<(-10000) 628988>,
+			<(-9000) 593342>,
+			<(-8000) 559931>,
+			<(-7000) 528602>,
+			<(-6000) 499212>,
+			<(-5000) 471632>,
+			<(-4000) 445772>,
+			<(-3000) 421480>,
+			<(-2000) 398652>,
+			<(-1000) 377193>,
+			<0 357012>,
+			<1000 338006>,
+			<2000 320122>,
+			<3000 303287>,
+			<4000 287434>,
+			<5000 272500>,
+			<6000 258426>,
+			<7000 245160>,
+			<8000 232649>,
+			<9000 220847>,
+			<10000 209710>,
+			<11000 199196>,
+			<12000 189268>,
+			<13000 179890>,
+			<14000 171027>,
+			<15000 162651>,
+			<16000 154726>,
+			<17000 147232>,
+			<18000 140142>,
+			<19000 133432>,
+			<20000 127080>,
+			<21000 121066>,
+			<22000 115368>,
+			<23000 109970>,
+			<24000 104852>,
+			<25000 100000>,
+			<26000 95398>,
+			<27000 91032>,
+			<28000 86889>,
+			<29000 82956>,
+			<30000 79222>,
+			<31000 75675>,
+			<32000 72306>,
+			<33000 69104>,
+			<34000 66061>,
+			<35000 63167>,
+			<36000 60415>,
+			<37000 57797>,
+			<38000 55306>,
+			<39000 52934>,
+			<40000 50677>,
+			<41000 48528>,
+			<42000 46482>,
+			<43000 44533>,
+			<44000 42675>,
+			<45000 40904>,
+			<46000 39213>,
+			<47000 37601>,
+			<48000 36063>,
+			<49000 34595>,
+			<50000 33195>,
+			<51000 31859>,
+			<52000 30584>,
+			<53000 29366>,
+			<54000 28203>,
+			<55000 27091>,
+			<56000 26028>,
+			<57000 25013>,
+			<58000 24042>,
+			<59000 23113>,
+			<60000 22224>,
+			<61000 21374>,
+			<62000 20560>,
+			<63000 19782>,
+			<64000 19036>,
+			<65000 18322>,
+			<66000 17640>,
+			<67000 16986>,
+			<68000 16360>,
+			<69000 15759>,
+			<70000 15184>,
+			<71000 14631>,
+			<72000 14100>,
+			<73000 13591>,
+			<74000 13103>,
+			<75000 12635>,
+			<76000 12187>,
+			<77000 11756>,
+			<78000 11343>,
+			<79000 10946>,
+			<80000 10565>,
+			<81000 10199>,
+			<82000 9847>,
+			<83000 9509>,
+			<84000 9184>,
+			<85000 8872>,
+			<86000 8572>,
+			<87000 8283>,
+			<88000 8005>,
+			<89000 7738>,
+			<90000 7481>,
+			<91000 7234>,
+			<92000 6997>,
+			<93000 6769>,
+			<94000 6548>,
+			<95000 6337>,
+			<96000 6132>,
+			<97000 5934>,
+			<98000 5744>,
+			<99000 5561>,
+			<100000 5384>,
+			<101000 5214>,
+			<102000 5051>,
+			<103000 4893>,
+			<104000 4741>,
+			<105000 4594>,
+			<106000 4453>,
+			<107000 4316>,
+			<108000 4184>,
+			<109000 4057>,
+			<110000 3934>,
+			<111000 3816>,
+			<112000 3701>,
+			<113000 3591>,
+			<114000 3484>,
+			<115000 3380>,
+			<116000 3281>,
+			<117000 3185>,
+			<118000 3093>,
+			<119000 3003>,
+			<120000 2916>,
+			<121000 2832>,
+			<122000 2751>,
+			<123000 2672>,
+			<124000 2596>,
+			<125000 2522>;
+	};
+        tboard_thermistor6: thermal-ntc6 {
+		compatible = "mediatek,mt6685-tia-ntc";
+		#thermal-sensor-cells = <0>;
+		io-channels = <&mt6369_adc AUXADC_VIN1>;
+		io-channel-names = "MB_NTC";
+		temperature-lookup-table =
+			<(-40000) 4397119>,
+			<(-39000) 4092874>,
+			<(-38000) 3811717>,
+			<(-37000) 3551749>,
+			<(-36000) 3311236>,
+			<(-35000) 3088599>,
+			<(-34000) 2882396>,
+			<(-33000) 2691310>,
+			<(-32000) 2514137>,
+			<(-31000) 2349778>,
+			<(-30000) 2197225>,
+			<(-29000) 2055558>,
+			<(-28000) 1923932>,
+			<(-27000) 1801573>,
+			<(-26000) 1687773>,
+			<(-25000) 1581881>,
+			<(-24000) 1483100>,
+			<(-23000) 1391113>,
+			<(-22000) 1305413>,
+			<(-21000) 1225531>,
+			<(-20000) 1151037>,
+			<(-19000) 1081535>,
+			<(-18000) 1016661>,
+			<(-17000) 956080>,
+			<(-16000) 899481>,
+			<(-15000) 846579>,
+			<(-14000) 797111>,
+			<(-13000) 750834>,
+			<(-12000) 707524>,
+			<(-11000) 666972>,
+			<(-10000) 628988>,
+			<(-9000) 593342>,
+			<(-8000) 559931>,
+			<(-7000) 528602>,
+			<(-6000) 499212>,
+			<(-5000) 471632>,
+			<(-4000) 445772>,
+			<(-3000) 421480>,
+			<(-2000) 398652>,
+			<(-1000) 377193>,
+			<0 357012>,
+			<1000 338006>,
+			<2000 320122>,
+			<3000 303287>,
+			<4000 287434>,
+			<5000 272500>,
+			<6000 258426>,
+			<7000 245160>,
+			<8000 232649>,
+			<9000 220847>,
+			<10000 209710>,
+			<11000 199196>,
+			<12000 189268>,
+			<13000 179890>,
+			<14000 171027>,
+			<15000 162651>,
+			<16000 154726>,
+			<17000 147232>,
+			<18000 140142>,
+			<19000 133432>,
+			<20000 127080>,
+			<21000 121066>,
+			<22000 115368>,
+			<23000 109970>,
+			<24000 104852>,
+			<25000 100000>,
+			<26000 95398>,
+			<27000 91032>,
+			<28000 86889>,
+			<29000 82956>,
+			<30000 79222>,
+			<31000 75675>,
+			<32000 72306>,
+			<33000 69104>,
+			<34000 66061>,
+			<35000 63167>,
+			<36000 60415>,
+			<37000 57797>,
+			<38000 55306>,
+			<39000 52934>,
+			<40000 50677>,
+			<41000 48528>,
+			<42000 46482>,
+			<43000 44533>,
+			<44000 42675>,
+			<45000 40904>,
+			<46000 39213>,
+			<47000 37601>,
+			<48000 36063>,
+			<49000 34595>,
+			<50000 33195>,
+			<51000 31859>,
+			<52000 30584>,
+			<53000 29366>,
+			<54000 28203>,
+			<55000 27091>,
+			<56000 26028>,
+			<57000 25013>,
+			<58000 24042>,
+			<59000 23113>,
+			<60000 22224>,
+			<61000 21374>,
+			<62000 20560>,
+			<63000 19782>,
+			<64000 19036>,
+			<65000 18322>,
+			<66000 17640>,
+			<67000 16986>,
+			<68000 16360>,
+			<69000 15759>,
+			<70000 15184>,
+			<71000 14631>,
+			<72000 14100>,
+			<73000 13591>,
+			<74000 13103>,
+			<75000 12635>,
+			<76000 12187>,
+			<77000 11756>,
+			<78000 11343>,
+			<79000 10946>,
+			<80000 10565>,
+			<81000 10199>,
+			<82000 9847>,
+			<83000 9509>,
+			<84000 9184>,
+			<85000 8872>,
+			<86000 8572>,
+			<87000 8283>,
+			<88000 8005>,
+			<89000 7738>,
+			<90000 7481>,
+			<91000 7234>,
+			<92000 6997>,
+			<93000 6769>,
+			<94000 6548>,
+			<95000 6337>,
+			<96000 6132>,
+			<97000 5934>,
+			<98000 5744>,
+			<99000 5561>,
+			<100000 5384>,
+			<101000 5214>,
+			<102000 5051>,
+			<103000 4893>,
+			<104000 4741>,
+			<105000 4594>,
+			<106000 4453>,
+			<107000 4316>,
+			<108000 4184>,
+			<109000 4057>,
+			<110000 3934>,
+			<111000 3816>,
+			<112000 3701>,
+			<113000 3591>,
+			<114000 3484>,
+			<115000 3380>,
+			<116000 3281>,
+			<117000 3185>,
+			<118000 3093>,
+			<119000 3003>,
+			<120000 2916>,
+			<121000 2832>,
+			<122000 2751>,
+			<123000 2672>,
+			<124000 2596>,
+			<125000 2522>;
+	};
 	tsx_thermistor: thermal-ntc6@1c013120 {
 		compatible = "mediatek,mt6685-tia-ntc";
 		#thermal-sensor-cells = <0>;
@@ -1284,7 +1808,7 @@
 	memory_ssmr_features: memory-ssmr-features {
 		compatible = "mediatek,memory-ssmr-features";
 		svp-region-based-size = <0 0x9000000>;
-		tui-size = <0 0x4000000>;
+		tui-size = <0 0x0>;
 		wfd-region-based-size = <0 0x2000000>;
 		prot-region-based-size = <0 0x2000000>;
 		sapu-data-shm-size = <0 0x0>;
@@ -1385,6 +1909,11 @@
 	utos: utos {
 		compatible = "microtrust,utos";
 		interrupts = <GIC_SPI 114 IRQ_TYPE_EDGE_RISING 0>;
+	};
+
+	/* Mitee */
+	mitee: mitee {
+		compatible = "xiaomi,mitee";
 	};
 
 	tracker: tracker {
@@ -1959,6 +2488,10 @@
 		battery-oc-level = <2>;
 	};
 
+	flashlights_led191: flashlights-led191 {
+		compatible = "mediatek,flashlights_led191";
+	};
+
 	mtk_composite_v4l2_1: mtk-composite-v4l2-1 {
 		compatible = "mediatek,mtk_composite_v4l2_1";
 	};
@@ -2341,6 +2874,45 @@
 
 			trips {
 				nrpa_ntc_crit: nrpa-ntc-crit {
+					temperature = <119000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+			};
+		};
+		chg_ntc: chg_ntc {
+			polling-delay = <0>; /* milliseconds */
+			polling-delay-passive = <0>; /* milliseconds */
+			thermal-sensors = <&tboard_thermistor4>;
+
+			trips {
+				chg_ntc_crit: chg-ntc-crit {
+					temperature = <119000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+			};
+		};
+		flash_therm: flash_therm {
+			polling-delay = <0>; /* milliseconds */
+			polling-delay-passive = <0>; /* milliseconds */
+			thermal-sensors = <&tboard_thermistor5>;
+
+			trips {
+				flash_ntc_crit: flash-ntc-crit {
+					temperature = <119000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+			};
+		};
+		mb_ntc: mb_ntc {
+			polling-delay = <0>; /* milliseconds */
+			polling-delay-passive = <0>; /* milliseconds */
+			thermal-sensors = <&tboard_thermistor6>;
+
+			trips {
+				mb_ntc_crit: mb-ntc-crit {
 					temperature = <119000>;
 					hysteresis = <2000>;
 					type = "passive";
@@ -2827,11 +3399,13 @@
 	};
 
 	mtk_leds: mtk-leds {
+		compatible = "mediatek,disp-leds";
 		backlight {
 			label = "lcd-backlight";
-			max-brightness = <2047>;
-			min-brightness = <4>;
-			max-hw-brightness = <2047>;
+			led-mode = "4";
+			max-brightness = <20479>;
+			min-brightness = <1>;
+			max-hw-brightness = <20479>;
 		};
 	};
 
@@ -3547,6 +4121,14 @@
 		vmmrc-on-table = <0x2e788>;
 		vmmrc-off-table = <0x2e7a8>;
 		mminfra-base = <0x1e800000>;
+		dvfsrc-level-base = <0x1c00f000>;
+		required-opps = <&dvfsrc_freq_opp0>,
+				<&dvfsrc_freq_opp1>,
+				<&dvfsrc_freq_opp2>,
+				<&dvfsrc_freq_opp3>,
+				<&dvfsrc_freq_opp4>,
+				<&dvfsrc_freq_opp5>,
+				<&dvfsrc_freq_opp6>;
 	};
 
 	ccucammain: ccucammain {
@@ -3566,7 +4148,7 @@
 		pinctrl-0 = <&key_gpio_default>;
 		volumedown {
 			label = "Volume_Down";
-			linux,code = <114>;
+			linux,code = <115>;
 			linux,input-type = <1>;
 			gpios = <&pio 54 1>;
 			wakeup-source;
@@ -4814,6 +5396,7 @@
 			mediatek,ufs-bypass-vccqx-lpm;
 
 			bootmode = <&chosen>;
+			mediatek,ufs-broken-vcc;
 		};
 
 		seninf_top: seninf-top@1a00e000 {
@@ -5262,192 +5845,148 @@
 		gpu_mali_opp: opp-table0 {
 			compatible = "operating-points-v2";
 			opp00 {
-				opp-hz = /bits/ 64 <1300000000>;
-				opp-microvolt = <875000>;
+				opp-hz = /bits/ 64 <1047000000>;
+				opp-microvolt = <72500>;
 			};
 			opp01 {
-				opp-hz = /bits/ 64 <1275000000>;
-				opp-microvolt = <868750>;
+				opp-hz = /bits/ 64 <1024000000>;
+				opp-microvolt = <71875>;
 			};
 			opp02 {
-				opp-hz = /bits/ 64 <1250000000>;
-				opp-microvolt = <862500>;
+				opp-hz = /bits/ 64 <1001000000>;
+				opp-microvolt = <71250>;
 			};
 			opp03 {
-				opp-hz = /bits/ 64 <1228000000>;
-				opp-microvolt = <856250>;
+				opp-hz = /bits/ 64 <978000000>;
+				opp-microvolt = <70625>;
 			};
 			opp04 {
-				opp-hz = /bits/ 64 <1205000000>;
-				opp-microvolt = <850000>;
+				opp-hz = /bits/ 64 <956000000>;
+				opp-microvolt = <70625>;
 			};
 			opp05 {
-				opp-hz = /bits/ 64 <1183000000>;
-				opp-microvolt = <850000>;
+				opp-hz = /bits/ 64 <933000000>;
+				opp-microvolt = <70000>;
 			};
 			opp06 {
-				opp-hz = /bits/ 64 <1160000000>;
-				opp-microvolt = <843750>;
+				opp-hz = /bits/ 64 <910000000>;
+				opp-microvolt = <69375>;
 			};
 			opp07 {
-				opp-hz = /bits/ 64 <1137000000>;
-				opp-microvolt = <837500>;
+				opp-hz = /bits/ 64 <888000000>;
+				opp-microvolt = <68750>;
 			};
 			opp08 {
-				opp-hz = /bits/ 64 <1115000000>;
-				opp-microvolt = <831250>;
+				opp-hz = /bits/ 64 <865000000>;
+				opp-microvolt = <68125>;
 			};
 			opp09 {
-				opp-hz = /bits/ 64 <1092000000>;
-				opp-microvolt = <825000>;
+				opp-hz = /bits/ 64 <842000000>;
+				opp-microvolt = <67500>;
 			};
 			opp10 {
-				opp-hz = /bits/ 64 <1070000000>;
-				opp-microvolt = <818750>;
+				opp-hz = /bits/ 64 <820000000>;
+				opp-microvolt = <66875>;
 			};
 			opp11 {
-				opp-hz = /bits/ 64 <1047000000>;
-				opp-microvolt = <812500>;
+				opp-hz = /bits/ 64 <797000000>;
+				opp-microvolt = <66250>;
 			};
 			opp12 {
-				opp-hz = /bits/ 64 <1024000000>;
-				opp-microvolt = <806250>;
+				opp-hz = /bits/ 64 <775000000>;
+				opp-microvolt = <65625>;
 			};
 			opp13 {
-				opp-hz = /bits/ 64 <1001000000>;
-				opp-microvolt = <800000>;
+				opp-hz = /bits/ 64 <753000000>;
+				opp-microvolt = <65000>;
 			};
 			opp14 {
-				opp-hz = /bits/ 64 <978000000>;
-				opp-microvolt = <793750>;
+				opp-hz = /bits/ 64 <731000000>;
+				opp-microvolt = <64375>;
 			};
 			opp15 {
-				opp-hz = /bits/ 64 <956000000>;
-				opp-microvolt = <787500>;
+				opp-hz = /bits/ 64 <709000000>;
+				opp-microvolt = <64375>;
 			};
 			opp16 {
-				opp-hz = /bits/ 64 <933000000>;
-				opp-microvolt = <781250>;
+				opp-hz = /bits/ 64 <686000000>;
+				opp-microvolt = <63750>;
 			};
 			opp17 {
-				opp-hz = /bits/ 64 <910000000>;
-				opp-microvolt = <775000>;
+				opp-hz = /bits/ 64 <664000000>;
+				opp-microvolt = <63125>;
 			};
 			opp18 {
-				opp-hz = /bits/ 64 <888000000>;
-				opp-microvolt = <768750>;
+				opp-hz = /bits/ 64 <642000000>;
+				opp-microvolt = <62500>;
 			};
 			opp19 {
-				opp-hz = /bits/ 64 <865000000>;
-				opp-microvolt = <762500>;
+				opp-hz = /bits/ 64 <620000000>;
+				opp-microvolt = <61875>;
 			};
 			opp20 {
-				opp-hz = /bits/ 64 <842000000>;
-				opp-microvolt = <756250>;
+				opp-hz = /bits/ 64 <598000000>;
+				opp-microvolt = <61250>;
 			};
 			opp21 {
-				opp-hz = /bits/ 64 <820000000>;
-				opp-microvolt = <750000>;
+				opp-hz = /bits/ 64 <575000000>;
+				opp-microvolt = <60625>;
 			};
 			opp22 {
-				opp-hz = /bits/ 64 <797000000>;
-				opp-microvolt = <743750>;
+				opp-hz = /bits/ 64 <553000000>;
+				opp-microvolt = <60000>;
 			};
 			opp23 {
-				opp-hz = /bits/ 64 <775000000>;
-				opp-microvolt = <737500>;
+				opp-hz = /bits/ 64 <531000000>;
+				opp-microvolt = <59375>;
 			};
 			opp24 {
-				opp-hz = /bits/ 64 <753000000>;
-				opp-microvolt = <731250>;
+				opp-hz = /bits/ 64 <508000000>;
+				opp-microvolt = <58750>;
 			};
 			opp25 {
-				opp-hz = /bits/ 64 <731000000>;
-				opp-microvolt = <725000>;
+				opp-hz = /bits/ 64 <485000000>;
+				opp-microvolt = <58125>;
 			};
 			opp26 {
-				opp-hz = /bits/ 64 <709000000>;
-				opp-microvolt = <718750>;
+				opp-hz = /bits/ 64 <462000000>;
+				opp-microvolt = <57500>;
 			};
 			opp27 {
-				opp-hz = /bits/ 64 <686000000>;
-				opp-microvolt = <712500>;
+				opp-hz = /bits/ 64 <439000000>;
+				opp-microvolt = <57500>;
 			};
 			opp28 {
-				opp-hz = /bits/ 64 <664000000>;
-				opp-microvolt = <706250>;
+				opp-hz = /bits/ 64 <416000000>;
+				opp-microvolt = <56875>;
 			};
 			opp29 {
-				opp-hz = /bits/ 64 <642000000>;
-				opp-microvolt = <706250>;
+				opp-hz = /bits/ 64 <393000000>;
+				opp-microvolt = <56250>;
 			};
 			opp30 {
-				opp-hz = /bits/ 64 <620000000>;
-				opp-microvolt = <700000>;
+				opp-hz = /bits/ 64 <370000000>;
+				opp-microvolt = <55625>;
 			};
 			opp31 {
-				opp-hz = /bits/ 64 <598000000>;
-				opp-microvolt = <693750>;
+				opp-hz = /bits/ 64 <349000000>;
+				opp-microvolt = <55000>;
 			};
 			opp32 {
-				opp-hz = /bits/ 64 <575000000>;
-				opp-microvolt = <687500>;
+				opp-hz = /bits/ 64 <328000000>;
+				opp-microvolt = <54375>;
 			};
 			opp33 {
-				opp-hz = /bits/ 64 <553000000>;
-				opp-microvolt = <681250>;
+				opp-hz = /bits/ 64 <307000000>;
+				opp-microvolt = <53750>;
 			};
 			opp34 {
-				opp-hz = /bits/ 64 <531000000>;
-				opp-microvolt = <675000>;
+				opp-hz = /bits/ 64 <286000000>;
+				opp-microvolt = <53125>;
 			};
 			opp35 {
-				opp-hz = /bits/ 64 <508000000>;
-				opp-microvolt = <668750>;
-			};
-			opp36 {
-				opp-hz = /bits/ 64 <485000000>;
-				opp-microvolt = <662500>;
-			};
-			opp37 {
-				opp-hz = /bits/ 64 <462000000>;
-				opp-microvolt = <656250>;
-			};
-			opp38 {
-				opp-hz = /bits/ 64 <439000000>;
-				opp-microvolt = <650000>;
-			};
-			opp39 {
-				opp-hz = /bits/ 64 <416000000>;
-				opp-microvolt = <643750>;
-			};
-			opp40 {
-				opp-hz = /bits/ 64 <393000000>;
-				opp-microvolt = <637500>;
-			};
-			opp41 {
-				opp-hz = /bits/ 64 <370000000>;
-				opp-microvolt = <631250>;
-			};
-			opp42 {
-				opp-hz = /bits/ 64 <349000000>;
-				opp-microvolt = <625000>;
-			};
-			opp43 {
-				opp-hz = /bits/ 64 <328000000>;
-				opp-microvolt = <618750>;
-			};
-			opp44 {
-				opp-hz = /bits/ 64 <307000000>;
-				opp-microvolt = <612500>;
-			};
-			opp45 {
-				opp-hz = /bits/ 64 <286000000>;
-				opp-microvolt = <606250>;
-			};
-			opp46 {
 				opp-hz = /bits/ 64 <265000000>;
-				opp-microvolt = <600000>;
+				opp-microvolt = <52500>;
 			};
 		};
 
@@ -5806,7 +6345,7 @@
 				<0>, /*MTK_DRM_OPT_VIDLE_VDO_PANEL*/
 				<0>, /*MTK_DRM_OPT_VIDLE_HOME_SCREEN_IDLE*/
 				<0>, /*MTK_DRM_OPT_DPC_PRE_TE_EN*/
-				<1>; /*"MTK_DRM_OPT_PER_LARB_PORT_PEAK"*/
+				<0>; /*"MTK_DRM_OPT_PER_LARB_PORT_PEAK"*/
 		};
 
 		disp_mutex0: disp-mutex0@14001000 {
@@ -6138,6 +6677,11 @@
 			clock-names = "engine", "digital", "hs";
 		};
 
+		/* modify by wt.gaoxiangheng for swtp start */
+                swtp: swtp {
+		       compatible = "mediatek, swtp-eint";
+                };
+                /* modify by wt.gaoxiangheng for swtp end */
 		dsi_te: dsi-te {
 			compatible = "mediatek, dsi_te-eint";
 			status = "disabled";
@@ -6595,6 +7139,8 @@
 				<&pericfg_ao_clk CLK_PERAOP_DMA_B>;
 			clock-names = "main", "dma";
 			clock-div = <1>;
+			scl-gpio-id = <52>;
+			sda-gpio-id = <53>;
 		};
 
 		disp_dpc: disp-dpc@14020000 {
@@ -9038,8 +9584,12 @@
 				nvmem-cell-names = "intr_cal", "term_cal";
 				nvmem-cell-masks = <0x3f 0xf00>;
 				mediatek,efuse-intr = <0x23>;
-				mediatek,eye-vrt = <2>;
-				mediatek,eye-vrt-host = <2>;
+			        mediatek,eye-vrt = <0x7>;
+			        mediatek,eye-term = <0x6>;
+			        mediatek,rev6 = <0x3>;
+			        mediatek,eye-vrt-host = <0x7>;
+			        mediatek,eye-term-host = <0x6>;
+			        mediatek,rev6-host = <0x3>;
 				mediatek,discth= <0x9>;
 			};
 		};
@@ -9309,7 +9859,7 @@
 			interrupts = <GIC_SPI 110 IRQ_TYPE_EDGE_RISING 0>;
 			mediatek,key-debounce-ms = <1024>;
 			mediatek,hw-map-num = <72>;
-			mediatek,hw-init-map = <114 0 0 0 0 0 0 0 0 0 0 0 0
+			mediatek,hw-init-map = <115 0 0 0 0 0 0 0 0 0 0 0 0
 						0 0 0 0 0 0 0 0 0 0 0 0 0 0
 						0 0 0 0 0 0 0 0 0 0 0 0 0 0
 						0 0 0 0 0 0 0 0 0 0 0 0 0 0
@@ -9569,7 +10119,7 @@
 		mtk-dsp-voip = <0x1f 0xffffffff 0xffffffff 0xffffffff 0x30000>;
 		mtk-dsp-primary = <0x5 0xffffffff 0xffffffff \
 				   0xffffffff 0x30000>;
-		mtk-dsp-offload = <0x1d 0xffffffff 0xffffffff \
+		mtk-dsp-offload = <0x0 0xffffffff 0xffffffff \
 				   0xffffffff 0x400000>;
 		mtk-dsp-deep = <0x5 0xffffffff 0xffffffff 0xffffffff 0x30000>;
 		mtk-dsp-playback = <0x1 0xc 0xffffffff 0x10 0x30000>;
@@ -9907,8 +10457,8 @@
 		rw-emi-size = <0x480000>;
 		emi-alignment = <0x100000>;
 		emi-max-addr = <0x90000000>;
-		hwid-node = <92 132 131>;
-		adie-sku = <1 1 0 0 2 2 1 0>;  /* mt6637 = 0, mt6631 = 1 , mt6631 + mt6686 = 2 */
+		hwid-node = <92>;
+		adie-sku = <0 1>;  /* mt6637 = 0, mt6631 = 1 */
 	};
 
 	pda: pda@1a180000 {
@@ -10297,6 +10847,7 @@
 		<15 0  2>,/* IPI_OUT_C_SLEEP_1 */
 		<16 0  1>,/* IPI_OUT_TEST_1 */
 		//<24 0  6>,/* IPI_OUT_SCP_MPOOL_1 */
+		<50 0 10>,/* IPI_OUT_ELLIPTIC_ULTRA_0 */
 		<17 1  6>,/* IPI_OUT_LOGGER_CTRL */
 		<18 1  2>,/* IPI_OUT_SCPCTL_1 */
 		<46 1  1>,/* IPI_OUT_SCP_PM_NOTIFY_1 */
@@ -10337,6 +10888,7 @@
 		< 8 2 10 0 0 0 0>,/* IPI_IN_SCP_ERROR_INFO_0 */
 		//<12 2  6 0 0 0 0>,/* IPI_IN_SCP_MPOOL_0 */
 		<34 2 16 0 0 0 0>,/* IPI_IN_SCP_CONNSYS */
+		<51 2  10 0 0 0 0>,/* IPI_IN_ELLIPTIC_ULTRA_0 */
 		< 7 3  2 0 0 0 0>,/* IPI_IN_APCCCI_0 */
 		<38 3  1 0 0 0 0>,/* IPI_IN_SCP_AOD */
 		<28 3  5 0 0 0 0>,/* IPI_IN_AUDIO_ULTRA_SND_0 */
@@ -10367,7 +10919,7 @@
 				  <10  22 0>,	/* vow vendor G */
 				  <11  20 0>,	/* vow dual mic */
 				  <12 100 0>,	/* vow dual mic barge in */
-				  <13 200 0>;	/* ultrasound */
+				  <13 400 0>;	/* ultrasound */
 
 		scp-dram-region = "enable";   /* enable scp dram region manage */
 		scp-protect = "enable";   /* enable scp protections */
@@ -10395,7 +10947,8 @@
 				  <10 0x2000 0x0>, /* sensor debug */
 				  <11 0x100 0x0>, /* sensor custom writer */
 				  <12 0x100 0x0>, /* sensor custom reader */
-				  <19 0x200 0x0>;  /* low power debug */
+				  <19 0x200 0x0>,  /* low power debug */
+				  <20 0x8000 0x0>; /* elliptic ultrasound */
 
 		memorydump = <0x100000>, /* l2tcm */
 				 <0x0c4000>, /* l1c */
@@ -10462,6 +11015,11 @@
 		status = "okay";
 	};
 
+	simtray: simtray {
+		compatible = "xiaomi,simtray-status";
+		status-gpio = <&pio 46 0>;
+	};
+
 	extcon_usb: extcon-usb {
 		compatible = "mediatek,extcon-usb";
 		vbus-supply = <&mt6375_otg_vbus>;
@@ -10502,17 +11060,20 @@
 		lvsys-thd-enable = <1>;
 		vbat-thd-enable = <1>;
 		thd-volts-l = <
-			3550 3100 2900
-			4400 3400 3100
-			5000 4900 4400>;
+			3359 3302 3244
+			3458 3395 3330
+			3628 3555 3478
+			3884 3795 3703>;
 		thd-volts-h = <
-			3600 3550 3100
-			5000 4400 3400
-			5100 5000 4900>;
+			
+			3459 3359 3302
+		        3558 3458 3395
+			3728 3628 3555
+			3984 3884 3795>;
 		lvsys-thd-volt-l = <2900>;
 		lvsys-thd-volt-h = <3100>;
-		temperature-max-stage = <2>;
-		temperature-stage-threshold = <11 0>;
+		temperature-max-stage = <3>;
+		temperature-stage-threshold = <25 10 0>;
 	};
 
 	cpu_power_throttling: cpu-power-throttling {
@@ -10546,11 +11107,10 @@
 
 	md_power_throttling: md-power-throttling {
 		compatible = "mediatek,md-power-throttling";
+		lbat-dedicate-volts = <3500 3400>;
 
-		lbat-max-level = <3>;
+		lbat-max-level = <1>;
 		lbat-reduce-tx-lv1 = <0>;
-		lbat-reduce-tx-lv2 = <6>;
-		lbat-reduce-tx-lv3 = <6>;
 
 		oc-max-level = <2>;
 		oc-reduce-tx-lv1 = <0>;
@@ -11435,8 +11995,14 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 		#mbox-cells = <1>;
 	};
 
-	touch_panel0: touch-panel0 {
-		compatible = "mediatek,touch-panel";
+	touch: touch {
+		compatible = "goodix,gt9916r","focaltech_fts";
+	};
+
+	xiaomi_touch{
+		compatible = "xiaomi-touch";
+		status = "ok";
+		touch,name = "xiaomi-touch";
 	};
 
 	touch_tui0: touch-tui0 {
@@ -11458,15 +12024,17 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 
 		/* charging current */
 		usb-charger-current = <500000>;
-		ac-charger-current = <2050000>;
-		ac-charger-input-current = <3200000>;
-		non-std-ac-charger-current = <500000>;
+		ac-charger-current = <1500000>;
+		ac-charger-input-current = <1500000>;
+		non-std-ac-charger-current = <1000000>;
 		charging-host-charger-current = <1500000>;
-		ta-ac-charger-current = <3000000>;
+		ta-ac-charger-current = <1500000>;
 		pd-charger-current = <500000>;
+		default_charger_current = <500000>;
+		pre_charger_current = <250000>;
 
 		/* battery temperature protection */
-		temp-t4-threshold = <50>;
+		temp-t4-threshold = <58>;
 		temp-t3-threshold = <45>;
 		temp-t1-threshold = <0>;
 
@@ -11792,7 +12360,7 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 		temp-neg-10-thres = <0>;
 
 		/* battery temperature protection */
-		enable-min-charge-temp;
+		//enable-min-charge-temp;
 		min-charge-temp = <0>;
 		min-charge-temp-plus-x-degree = <6>;
 		max-charge-temp = <50>;
@@ -11827,6 +12395,25 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 		nr-port = <1>;
 		force-cv;
 		adapter-name = "pd_adapter";
+	};
+
+	pd_cp_manager: pd_cp_manager {
+	};
+
+	onewire_gpio: onewire_gpio {
+		status = "disabled";
+	};
+
+	st_stick: st_stick {
+		status = "disabled";
+	};
+
+	maxim_ds28e16: maxim_ds28e16 {
+		status = "disabled";
+	};
+
+	acl_slg: acl_slg {
+		status = "disabled";
 	};
 
 	mtk_ctd: mtk-ctd {
@@ -11919,7 +12506,9 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 				      <&mt6375_adc MT6375_ADC_TEMPJC>,
 				      <&mt6375_adc MT6375_ADC_USBDP>,
 				      <&mt6375_adc MT6375_ADC_USBDM>,
-				      <&mt6375_adc MT6375_ADC_SBU2>;
+				      <&mt6375_adc MT6375_ADC_SBU2>,
+					  <&pmic_adc AUXADC_VIN6>,
+					  <&pmic_adc AUXADC_VIN7>;
 			chg-name = "primary_chg";
 			aicr = <500>;
 			mivr = <4400>;
@@ -11934,7 +12523,7 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 			otg-lbp = <2800>;
 			ircmp-r = <16700>;
 			ircmp-v = <32>;
-			chg-tmr = <10>;
+			chg-tmr = <20>;
 			chg-tmr-en;
 			dcdt-sel = <600>;
 			spec-ta-en;
@@ -11970,12 +12559,12 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 			io-channels = <&mt6375_adc MT6375_ADC_SBU1>,
 				      <&mt6375_adc MT6375_ADC_SBU2>;
 			charger = <&mt6375_chg>;
-			tcpc,en-wd;
+			// tcpc,en-wd;
 			// tcpc,en-wd-dual-port;
 			tcpc,en-ctd;
 			tcpc,en-fod;
 			tcpc,en-typec-otp;
-			// tcpc,en-floatgnd;
+			tcpc,en-floatgnd;
 			wd,sbu-calib-init = <1200>;	/* mV */
 			wd,sbu-pl-bound = <200>;	/* mV */
 			wd,sbu-pl-lbound-c2c = <1100>;	/* mV */
@@ -12005,8 +12594,8 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 							    0x00 0x00 0x00 0x00
 							    0x00 0x00 0x01 0x00
 							    0x00 0x00 0x00 0x00
-							    0x01 0x0b 0x01 0x0a
-							    0x0a 0x00 0x00 0x00>;
+							    0x01 0x0b 0x01 0x32
+							    0x32 0x00 0x00 0x00>;
 				pd,mfrs = "RichtekTCPC";
 
 				/*
@@ -12018,8 +12607,8 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 
 				pd,source-pdo-size = <1>;
 				pd,source-pdo-data = <0x00019096>; /* 5V, 1500 mA */
-				pd,sink-pdo-size = <1>;
-				pd,sink-pdo-data = <0x000190c8>;
+				pd,sink-pdo-size = <2>;
+				pd,sink-pdo-data = <0x0001912c 0xc0c82464>; /* FIXED 5V3A, PPS 3.6V ~ 10V 5A */
 
 				/*
 				 * No DP, host + device
@@ -12033,7 +12622,7 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 				 */
 
 				pd,id-vdo-size = <6>;
-				pd,id-vdo-data = <0xd54029cf 0x0 0x63750000
+				pd,id-vdo-data = <0xd14029cf 0x0 0x63750000
 						  0x61000000 0x0 0x41000000>;
 
 				bat,nr = <1>;
@@ -12054,10 +12643,10 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 				// local-give-back;
 				local-no-suspend;
 
-				attempt-enter-dp-mode;
+				//attempt-enter-dp-mode;
 				// attempt-discover-cable;
-				// attempt-discover-id;
-				// attempt-discover-svids;
+				attempt-discover-id;
+				attempt-discover-svids;
 
 				/* 0: disable, 1: prefer-snk, 2: prefer-src */
 				pr-check = <0>;
@@ -12070,23 +12659,6 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 				dr-check = <0>;
 				// dr-reject-as-dfp;
 				// dr-reject-as-ufp;
-			};
-			displayport {
-				/* connection type = "both", "ufp-d", "dfp-d" */
-				1st-connection = "dfp-d";
-				2nd-connection = "dfp-d";
-				// usbr20-not-used;
-				typec,receptacle;
-				ufp-d {
-					// pin-assignment,mode-c;
-					// pin-assignment,mode-d;
-					// pin-assignment,mode-e;
-				};
-				dfp-d {
-					pin-assignment,mode-c;
-					pin-assignment,mode-d;
-					pin-assignment,mode-e;
-				};
 			};
 		};
 		mt6375_auxadc: auxadc {
@@ -12259,12 +12831,13 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 			     "richtek,rt6160-vbb";
 		reg = <0x75>;
 		//enable-gpios = <&gpio26 2 0>;
+		//sm,enable-range;
 		regulator-name = "rt6160-buckboost-2";
 		regulator-min-microvolt = <2025000>;
 		regulator-max-microvolt = <5200000>;
 		regulator-always-on;
 		is-existed = <0>;
-
+		status = "okay";
 		dbg {
 			compatible = "richtek,rt6160-dbg";
 		};
@@ -12282,7 +12855,7 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 		regulator-min-microvolt = <3250000>;
 		regulator-max-microvolt = <3250000>;
 		regulator-always-on;
-
+		status = "disabled";
 		dbg {
 			compatible = "richtek,rt6160-dbg";
 		};
@@ -12692,9 +13265,9 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 /delete-node/ &mt6363_vbuck1_sshub;
 /delete-node/ &mt6363_vbuck2_sshub;
 /delete-node/ &mt6363_vbuck4_sshub;
-/delete-node/ &mt6369_vmch;
-/delete-node/ &mt6369_vmch_eint_low;
 /delete-node/ &mt6369_vdigrf;
+/delete-node/ &mt6369_vmch_eint_low;
+/delete-node/ &mt6369_vmch_eint_high;
 
 &main_pmic {
 	pmic-lvsys-notify {
@@ -12731,7 +13304,7 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 };
 
 &md_auxadc {
-	io-channels = <&pmic_adc (ADC_PURES_OPEN_MASK | AUXADC_VIN1)>;
+	io-channels = <&pmic_adc (ADC_PURES_OPEN_MASK | AUXADC_VIN5)>;
 };
 
 &mt6369codec {

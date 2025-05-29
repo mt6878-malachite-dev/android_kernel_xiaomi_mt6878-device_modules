@@ -198,3 +198,13 @@ config REGULATOR_MT6878_ALPHA_SUPPORT
 	  and set N to disable.
 endif
 
+config REGULATOR_ET5904
+        tristate "Fairchild ET5904 Regulator"
+        depends on I2C && (OF || COMPILE_TEST)
+        select REGMAP_I2C
+        help
+          This driver supports Fairchild (ETEK Semiconductor) ET5904
+          regulator. The regulator is a programmable power management IC
+          (PMIC), it is controlled by I2C and provides one BUCK, one BOOST
+          and four LDO outputs.
+

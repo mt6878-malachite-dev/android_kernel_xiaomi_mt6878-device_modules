@@ -21,6 +21,8 @@
 #include <linux/proc_fs.h>
 
 #include "extcon-mtk-usb.h"
+#include "../../../power/supply/mtk_charger.h"
+#include "../../../power/supply/pd_cp_manager.h"
 
 #if IS_ENABLED(CONFIG_TCPC_CLASS)
 #include "tcpm.h"
@@ -129,6 +131,7 @@ static bool usb_is_online(struct mtk_extcon_info *extcon)
 		return false;
 }
 
+extern int online_status;
 static void mtk_usb_extcon_psy_detector(struct work_struct *work)
 {
 	struct mtk_extcon_info *extcon = container_of(to_delayed_work(work),
@@ -137,10 +140,10 @@ static void mtk_usb_extcon_psy_detector(struct work_struct *work)
 	/* Workaround for PR_SWAP, IF tcpc_dev, then do not switch role. */
 	/* Since we will set USB to none when type-c plug out */
 	if (extcon->tcpc_dev) {
-		if (usb_is_online(extcon) && extcon->c_role == USB_ROLE_NONE)
+		if (usb_is_online(extcon) && extcon->c_role == USB_ROLE_NONE && online_status)
 			mtk_usb_extcon_set_role(extcon, USB_ROLE_DEVICE);
 	} else {
-		if (usb_is_online(extcon))
+		if (usb_is_online(extcon) && online_status)
 			mtk_usb_extcon_set_role(extcon, USB_ROLE_DEVICE);
 		else
 			mtk_usb_extcon_set_role(extcon, USB_ROLE_NONE);
@@ -200,14 +203,24 @@ static int mtk_usb_extcon_set_vbus(struct mtk_extcon_info *extcon,
 	struct regulator *vbus = extcon->vbus;
 	struct device *dev = extcon->dev;
 	int ret;
+	struct charger_device *cp_master;
 
 	/* vbus is optional */
 	if (!vbus || extcon->vbus_on == is_on)
 		return 0;
 
+	cp_master = get_charger_by_name("cp_master");
+	if (!cp_master) {
+		dev_err(dev, "%s: failed to get cp_master\n", __func__);
+		return -1;
+	}
+
 	dev_info(dev, "vbus turn %s\n", is_on ? "on" : "off");
 
 	if (is_on) {
+		//charger_dev_cp_set_mode(cp_master, SC8561_REVERSE_1_1_CONVERTER_MODE);
+		charger_dev_enable_acdrv_manual(cp_master, true);
+
 		if (extcon->vbus_vol) {
 			ret = regulator_set_voltage(vbus,
 					extcon->vbus_vol, extcon->vbus_vol);
@@ -232,6 +245,8 @@ static int mtk_usb_extcon_set_vbus(struct mtk_extcon_info *extcon,
 			return ret;
 		}
 	} else {
+		//charger_dev_cp_set_mode(cp_master, SC8561_FORWARD_2_1_CHARGER_MODE);
+		charger_dev_enable_acdrv_manual(cp_master, false);
 		regulator_disable(vbus);
 		/* Restore to default state */
 		extcon->vbus_cur_inlimit = 0;

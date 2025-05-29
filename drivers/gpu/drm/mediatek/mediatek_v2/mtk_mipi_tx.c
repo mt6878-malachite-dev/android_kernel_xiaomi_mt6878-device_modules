@@ -2144,6 +2144,16 @@ static int mtk_mipi_tx_pll_dphy_config_mt6989(struct mtk_mipi_tx *mipi_tx)
 			FLD_RG_DSI_V2I_REF_SEL, 0x0);
 #endif
 
+	 /*set volate*/
+	writel(0x444412C0, mipi_tx->regs + MIPITX_VOLTAGE_SEL_MT6983);
+
+	/* change the mipi_volt */
+	if (mipi_volt) {
+		DDPMSG("%s+ mipi_volt change: %d\n", __func__, mipi_volt);
+		mtk_mipi_tx_update_bits(mipi_tx, MIPITX_VOLTAGE_SEL_MT6983,
+			FLD_RG_DSI_HSTX_LDO_REF_SEL, mipi_volt<<6);
+	}
+
 	/* value different from MT6983 */
 	if (rate < 2500)
 		writel(0xFFFF00F0, mipi_tx->regs + MIPITX_PRESERVED_MT6983);

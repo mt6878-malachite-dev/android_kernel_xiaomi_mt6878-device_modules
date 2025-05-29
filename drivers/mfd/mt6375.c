@@ -216,7 +216,7 @@ static int mt6375_irq_map(struct irq_domain *h, unsigned int virq,
 	struct i2c_client *client = to_i2c_client(ddata->dev);
 
 	irq_set_chip_data(virq, ddata);
-	if (hwirq == MT6375_GM30_EVT)
+	if (hwirq == MT6375_GM30_EVT || hwirq == MT6375_PD_EVT)
 		irq_set_chip_and_handler(virq, &ddata->irq_chip,
 					 handle_simple_irq);
 	else {
@@ -238,6 +238,7 @@ static irqreturn_t mt6375_irq_handler(int irq, void *data)
 {
 	struct mt6375_data *ddata = data;
 
+	generic_handle_irq(irq_find_mapping(ddata->domain, MT6375_PD_EVT));
 	generic_handle_irq(irq_find_mapping(ddata->domain, MT6375_GM30_EVT));
 	return IRQ_WAKE_THREAD;
 }
@@ -246,7 +247,7 @@ static irqreturn_t mt6375_irq_thread(int irq, void *data)
 {
 	struct mt6375_data *ddata = data;
 	u8 evt[MT6375_IRQ_REGS];
-	bool handled = false;
+	bool handled = false, need_ack = false;
 	int i, j, ret;
 
 	ret = regmap_bulk_read(ddata->rmap, MT6375_REG_CHG_IRQ0, evt,
@@ -257,16 +258,22 @@ static irqreturn_t mt6375_irq_thread(int irq, void *data)
 	}
 
 	/* ignore masked irq and ack */
-	for (i = 0; i < MT6375_IRQ_REGS; i++)
+	for (i = 0; i < MT6375_IRQ_REGS; i++){
 		evt[i] &= ~ddata->mask_buf[i];
-	ret = regmap_bulk_write(ddata->rmap, MT6375_REG_CHG_IRQ0, evt,
-				MT6375_IRQ_REGS);
-	if (ret < 0)
-		dev_err(ddata->dev, "failed to ack irq status\n");
+		if (evt[i])
+			need_ack = true;
+	}
+
+	if (need_ack) {
+		ret = regmap_bulk_write(ddata->rmap, MT6375_REG_CHG_IRQ0, evt,
+					MT6375_IRQ_REGS);
+		if (ret < 0)
+			dev_info(ddata->dev, "failed to ack irq status\n");
+	}
 
 	/* handle irq */
 	for (i = 0; i < MT6375_IRQ_REGS; i++) {
-		if (!evt[i] || i == (MT6375_GM30_EVT / 8))
+		if (!evt[i] || i == (MT6375_GM30_EVT / 8) || i == (MT6375_PD_EVT / 8))
 			continue;
 		for (j = 0; j < 8; j++) {
 			if (!(evt[i] & BIT(j)))

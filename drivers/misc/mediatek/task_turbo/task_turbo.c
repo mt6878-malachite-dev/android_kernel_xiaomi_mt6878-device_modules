@@ -281,6 +281,10 @@ static void probe_android_vh_alter_rwsem_list_add(void *ignore, struct rwsem_wai
 							struct rw_semaphore *sem,
 							bool *already_on_list)
 {
+#ifdef CONFIG_METIS_MTK
+	if(*already_on_list)
+		return;
+#endif
 	rwsem_list_add(waiter->task, &waiter->list, &sem->wait_list);
 	*already_on_list = true;
 }
@@ -328,6 +332,11 @@ static void probe_android_vh_alter_futex_plist_add(void *ignore, struct plist_no
 	int prev_pid = 0;
 	bool prev_turbo = 1;
 	bool this_turbo;
+
+#ifdef CONFIG_METIS_MTK
+	if(*already_on_hb)
+		return;
+#endif
 
 	if (!sub_feat_enable(SUB_FEAT_LOCK) &&
 	    !is_turbo_task(current)) {

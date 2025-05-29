@@ -337,10 +337,15 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		typec_mux_set(rpmd->mux[idx], &state);
 		break;
 	case TCP_NOTIFY_WD0_STATE:
-		tcpm_typec_change_role_postpone(rpmd->tcpc[idx],
+		if(rpmd->tcpc[idx]->bootmode == 8) {
+			tcpm_typec_change_role_postpone(rpmd->tcpc[idx],
+						TYPEC_ROLE_SNK, true);
+		} else {
+			tcpm_typec_change_role_postpone(rpmd->tcpc[idx],
 						noti->wd0_state.wd0 ?
 						rpmd->role_def[idx] :
 						TYPEC_ROLE_SNK, true);
+		}
 		break;
 	case TCP_NOTIFY_PS_CHANGE:
 		dev_dbg(rpmd->dev, "%s vbus_level = %d\n",

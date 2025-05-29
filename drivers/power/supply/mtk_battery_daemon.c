@@ -2535,6 +2535,60 @@ static ssize_t BAT_NO_PROP_TIMEOUT_store(
 	return size;
 }
 
+static ssize_t ui_soh_show(struct device *dev,
+		struct device_attribute *attr,
+		char *buf)
+{
+	int ret = 0;
+	u8 ui_soh_data[70] = {0};
+
+	ret = batt_auth_get_ui_soh(ui_soh_data, 11);
+	pr_err("%s ret=%d\n", __func__, ret);
+	ret = snprintf(buf, PAGE_SIZE, "%d %d %d %d %d %d %d %d %d %d %d \n",
+			ui_soh_data[0],ui_soh_data[1],ui_soh_data[2],ui_soh_data[3],ui_soh_data[4],ui_soh_data[5],
+			ui_soh_data[6],ui_soh_data[7],ui_soh_data[8],ui_soh_data[9],ui_soh_data[10]);
+	bm_err("%s: latest_ui_soh = %d \n", __func__, ui_soh_data[0]);
+	return ret;
+}
+
+static ssize_t ui_soh_store(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t count)
+{
+	char t_data[70] = {0};
+	char *pchar = NULL, *qchar = NULL;
+	u8 ui_soh_data[40] = {0,};
+	int ret = 0, i = 0;
+	u8 val = 0;
+	struct mtk_battery *gm;
+
+	gm = get_mtk_battery();
+
+	if (gm) {
+		memset(t_data, 0, sizeof(t_data));
+		strncpy(t_data, buf, count);
+		bm_err("%s t_data : %s\n", __func__, t_data);
+		qchar = t_data;
+		while ((pchar = strsep(&qchar, " ")))
+		{
+			ret = kstrtou8(pchar, 10, &val);
+			if (ret < 0) {
+				bm_err("kstrtou8 error return %d \n", ret);
+				return count;
+			}
+			ui_soh_data[i] = val;
+			val = 0;
+			bm_err("%s ui_soh_data[%d]: %d \n", __func__ ,i, ui_soh_data[i]);
+			i++;
+		}
+		ret = batt_auth_set_ui_soh(ui_soh_data, 11, gm->soh);
+		gm->ui_soh = ui_soh_data[0];
+		bm_err("%s: ui_soh = %d, raw_soh = %d\n",__func__, gm->ui_soh, gm->soh);
+	}
+
+	return 0;
+}
+
 static DEVICE_ATTR_RW(Battery_Temperature);
 static DEVICE_ATTR_RW(UI_SOC);
 static DEVICE_ATTR_RW(uisoc_update_type);
@@ -2552,6 +2606,7 @@ static DEVICE_ATTR_RW(reset_aging_factor);
 static DEVICE_ATTR_RW(BAT_EC);
 static DEVICE_ATTR_RW(BAT_HEALTH);
 static DEVICE_ATTR_RW(BAT_NO_PROP_TIMEOUT);
+static DEVICE_ATTR_RW(ui_soh);
 
 static int mtk_battery_setup_files(struct platform_device *pdev)
 {
@@ -2627,6 +2682,12 @@ static int mtk_battery_setup_files(struct platform_device *pdev)
 	ret = device_create_file(&(pdev->dev), &dev_attr_BAT_NO_PROP_TIMEOUT);
 	if (ret)
 		goto _out;
+
+	ret = device_create_file(&(pdev->dev), &dev_attr_ui_soh);
+	if (ret) {
+		bm_err("%s create ui_soh node fail(%d)\n", __func__, ret);
+		goto _out;
+	}
 
 _out:
 	return ret;
@@ -3927,6 +3988,7 @@ static void mtk_battery_daemon_handler(struct mtk_battery *gm, void *nl_data,
 	{
 		int reset = gm->is_reset_aging_factor;
 
+		ret_msg->fgd_data_len += sizeof(reset);
 		memcpy(ret_msg->fgd_data, &reset,
 			sizeof(reset));
 
@@ -4159,7 +4221,7 @@ static void mtk_battery_daemon_handler(struct mtk_battery *gm, void *nl_data,
 		prcv = (struct fgd_cmd_param_t_4 *)rcv;
 		memcpy(&param, prcv->input, sizeof(struct fgd_cmd_param_t_8));
 
-		bm_err("[fr] FG_DAEMON_CMD_SET_BATTERY_CAPACITY = %d %d %d %d %d %d %d %d %d %d RM:%d\n",
+		bm_err("[fr] FG_DAEMON_CMD_SET_BATTERY_CAPACITY = %d %d %d %d %d %d %d %d %d %d RM:%d aging:%d\n",
 				param.data[0],
 				param.data[1],
 				param.data[2],
@@ -4170,7 +4232,13 @@ static void mtk_battery_daemon_handler(struct mtk_battery *gm, void *nl_data,
 				param.data[7],
 				param.data[8],
 				param.data[9],
-				param.data[4] * param.data[6] / 10000);
+				param.data[4] * param.data[6] / 10000, 
+				param.data[10]);
+
+		if (param.data[10] != 0) {
+			gm->new_aging = param.data[10];
+			bm_err("[fr] aging:%d\n", param.data[10]);
+		}
 
 		psy = power_supply_get_by_name("mtk-gauge");
 		if (psy == NULL) {

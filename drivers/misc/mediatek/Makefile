@@ -101,8 +101,15 @@ obj-$(CONFIG_DEVICE_MODULES_MTK_SMI) += smi/
 obj-$(CONFIG_INTERCONNECT_MTK_MMQOS_COMMON) += mmqos/
 obj-$(CONFIG_MTK_GATE_IC) += gate_ic/
 obj-$(CONFIG_USB) += usb/
+obj-$(CONFIG_MTK_ULTRASND_PROXIMITY) += elliptic/
 obj-$(CONFIG_MTK_WIDEVINE_DRM) += widevine_drm/
 obj-$(CONFIG_MTK_PGBOOST) += pgboost/
 obj-$(CONFIG_MTK_MBRAINK)      += mbraink/
+obj-$(CONFIG_HARDWARE_INFO)    += hardware_info/
 obj-$(CONFIG_MTK_IPS_HELPER) += ips/
+obj-$(CONFIG_AWINIC_HAPTIC_HV)  += aw_haptic/
+obj-$(CONFIG_SIH_VIBRATOR)  += si_haptic/
+# BSP.System - 2023.9.6 - add simtray status
+obj-$(CONFIG_SIMTRAY_STATUS) += simtray/
+obj-$(CONFIG_MI_WIFI_GPIO)	+= wifi_gpio/
 

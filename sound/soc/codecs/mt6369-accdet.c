@@ -3,6 +3,7 @@
  * Copyright (C) 2023 MediaTek Inc.
  */
 
+#define CONFIG_USB_SWITCH_ET7480 1 //add for et7480 for temporary
 #include <linux/gpio.h>
 #include <linux/iio/consumer.h>
 #include <linux/input.h>
@@ -55,6 +56,23 @@
 #define EINT_PLUG_OUT			(0)
 #define EINT_PLUG_IN			(1)
 #define EINT_MOISTURE_DETECTED	(2)
+
+#define MEDIA_PREVIOUS_SCAN_CODE 257
+#define MEDIA_NEXT_SCAN_CODE 258
+
+/* add et7480 */
+#ifdef CONFIG_USB_SWITCH_ET7480
+enum et_function {
+	ET_MIC_GND_SWAP,
+	ET_USBC_ORIENTATION_CC1,
+	ET_USBC_ORIENTATION_CC2,
+	ET_USBC_DISPLAYPORT_DISCONNECTED,
+	ET_EVENT_MAX,
+};
+static struct device_node *et_handle = NULL;
+extern int et7480_switch_event(struct device_node *node, enum et_function event);
+#endif
+/* end */
 
 struct mt6369_accdet_data {
 	struct snd_soc_jack jack;
@@ -1735,6 +1753,13 @@ static inline void check_cable_type(void)
 			if (accdet->eint_sync_flag) {
 				accdet->cable_type = HEADSET_NO_MIC;
 				accdet->accdet_status = HOOK_SWITCH;
+#ifdef CONFIG_USB_SWITCH_ET7480
+				/* add et7480 switch event */
+				if (et_handle) {
+					pr_info("%s: use et7480 to switch mic and gnd", __func__);
+					//et7480_switch_event(et_handle, 0);
+				}
+#endif
 			} else
 				pr_notice("accdet hp has been plug-out\n");
 			mutex_unlock(&accdet->res_lock);
@@ -2446,6 +2471,14 @@ static int accdet_get_dts_data(void)
 		pr_info("Moisture_INT support water_r=%d, int_r=%d\n",
 		     accdet->water_r, accdet->moisture_int_r);
 	}
+
+#ifdef CONFIG_USB_SWITCH_ET7480
+		et_handle = of_parse_phandle(node, "et7480-i2c-handle", 0);
+		if (NULL == et_handle) {
+			pr_err("%s: get et_handle error. \n", __func__);
+		}
+#endif
+
 	return 0;
 }
 
@@ -2905,8 +2938,8 @@ int mt6369_accdet_init(struct snd_soc_component *component,
 
 	accdet->jack.jack->input_dev->id.bustype = BUS_HOST;
 	snd_jack_set_key(accdet->jack.jack, SND_JACK_BTN_0, KEY_PLAYPAUSE);
-	snd_jack_set_key(accdet->jack.jack, SND_JACK_BTN_1, KEY_VOLUMEDOWN);
-	snd_jack_set_key(accdet->jack.jack, SND_JACK_BTN_2, KEY_VOLUMEUP);
+	snd_jack_set_key(accdet->jack.jack, SND_JACK_BTN_1, MEDIA_NEXT_SCAN_CODE);
+	snd_jack_set_key(accdet->jack.jack, SND_JACK_BTN_2, MEDIA_PREVIOUS_SCAN_CODE);
 	snd_jack_set_key(accdet->jack.jack, SND_JACK_BTN_3, KEY_VOICECOMMAND);
 
 	snd_soc_component_set_jack(component, &accdet->jack, NULL);
@@ -3161,6 +3194,20 @@ err_chrdevregion:
 	pr_notice("%s error. now exit.!\n", __func__);
 	return ret;
 }
+
+#ifdef CONFIG_USB_SWITCH_ET7480
+void accdet_eint_callback_wrapper(unsigned int plug_status)
+{
+	int ret = 0;
+	pr_info("%s: call ex eint handler, plug_status %d\n", __func__, plug_status);
+	accdet->cur_eint_state = (plug_status == 1 ? EINT_PLUG_IN : EINT_PLUG_OUT);
+	disable_irq_nosync(accdet->gpioirq);//
+	pr_info("accdet %s(), cur_eint_state=%d\n", __func__, accdet->cur_eint_state);
+	ret = queue_work(accdet->eint_workqueue, &accdet->eint_work);
+	pr_info("%s: exit queue work\n", __func__);
+}
+EXPORT_SYMBOL(accdet_eint_callback_wrapper);
+#endif
 
 static int mt6369_accdet_remove(struct platform_device *pdev)
 {

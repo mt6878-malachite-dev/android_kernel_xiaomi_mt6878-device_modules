@@ -522,6 +522,8 @@ struct PDA_Data_t {
 
 	int Status;
 	unsigned int Timeout;
+
+	unsigned int address_offset;
 };
 
 struct pda_mmu {

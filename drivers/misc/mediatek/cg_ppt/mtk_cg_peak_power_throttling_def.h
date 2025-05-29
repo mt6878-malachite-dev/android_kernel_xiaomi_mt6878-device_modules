@@ -137,6 +137,14 @@ extern void ppt_critical_exit(void);
 #define CPU_LOW_KEY (THERMAL_CSRAM_BASE_REMAP + 0x378)
 #define G2C_PP_LMT_FREQ_ACK_TIMEOUT (THERMAL_CSRAM_BASE_REMAP + 0x37C)
 
+//TODO: CG Pre-Throttle (Temperatory)
+#define THERMAL_CPU_PRETHROTTLE_TEMP (THERMAL_CSRAM_BASE_REMAP + 0x2E4)
+#define THERMAL_GPU_PRETHROTTLE_TEMP (THERMAL_CSRAM_BASE_REMAP + 0x2E8)
+#define THERMAL_GPU_PRETHROTTLE_OPP (THERMAL_CSRAM_BASE_REMAP + 0x3C0)
+
+
+
+
 struct ThermalCsramCtrlBlock {
 	int g2c_b_pp_lmt_freq;
 	int g2c_b_pp_lmt_freq_ack;

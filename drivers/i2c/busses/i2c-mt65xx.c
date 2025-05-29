@@ -114,6 +114,9 @@
 #define MAX_POLLING_CNT		10
 #define SCP_WAKE_TIMEOUT	40
 
+/*set speed v2 use I2C_DEFAULT_CALI_SCALE*/
+#define I2C_DEFAULT_CALI_SCALE		970
+
 #define I2C_DRV_NAME		"i2c-mt65xx"
 
 /* mt6873 use DMA_HW_VERSION1 */
@@ -340,6 +343,7 @@ struct mtk_i2c {
 	unsigned int ch_offset_i2c;
 	unsigned int ch_offset_scp;
 	unsigned int ch_offset_dma;
+	unsigned int cali_speed_scale;	/*speed v2 calibrate scale */
 	enum mtk_trans_op op;
 	u16 timing_reg;
 	u16 high_speed_reg;
@@ -1144,6 +1148,24 @@ exit:
 	return ret;
 }
 
+/*
+ * calibrate_speed_v2 function: To compensate for speed drops due to clock stretch
+ * setting_speed = 765 * speed * speed + 9944565303 * speed + 8703150401734(formula
+ * fitted by actual speed and target speed)
+ */
+static unsigned int calibrate_speed_v2(struct mtk_i2c *i2c, unsigned int target_speed)
+{
+	unsigned long speed, setting_speed;
+
+	speed = (unsigned long)(target_speed);
+	setting_speed = 765 * speed * speed + 9944565303 * speed + 8703150401734;
+	setting_speed = i2c->cali_speed_scale * setting_speed / 10000000000000000;
+	setting_speed = setting_speed * 1000;
+	if (setting_speed < I2C_MAX_STANDARD_MODE_FREQ)
+		setting_speed = I2C_MAX_STANDARD_MODE_FREQ;
+	return (unsigned int)setting_speed;
+}
+
 static int mtk_i2c_calculate_speed_v2(struct mtk_i2c *i2c,
 	struct mtk_i2c_cal_para *cal_para)
 {
@@ -1215,8 +1237,12 @@ static int mtk_i2c_set_speed_v2(struct mtk_i2c *i2c, unsigned int parent_clk)
 	unsigned int target_speed = i2c->speed_hz;
 	unsigned int head_speed = I2C_MAX_FAST_MODE_FREQ;
 	unsigned int max_clk_div = MAX_CLOCK_DIV_5BITS;
+	unsigned int cali_speed = 0;
 	struct mtk_i2c_cal_para h_cal_para;
 	struct mtk_i2c_cal_para l_cal_para;
+
+	if (target_speed <= I2C_MAX_FAST_MODE_PLUS_FREQ)
+		cali_speed = calibrate_speed_v2(i2c, target_speed);
 
 	for (clk_div = 1; clk_div <= max_clk_div; clk_div++) {
 		if (target_speed > I2C_MAX_FAST_MODE_PLUS_FREQ) {
@@ -1260,14 +1286,12 @@ static int mtk_i2c_set_speed_v2(struct mtk_i2c *i2c, unsigned int parent_clk)
 		} else {
 			l_cal_para.exp_duty = I2C_LS_DUTY;
 			l_ext_time = (parent_clk / clk_div) * 5 /
-				(target_speed / I2C_MAX_STANDARD_MODE_FREQ * 1000000);
+				(cali_speed / I2C_MAX_STANDARD_MODE_FREQ * 1000000);
 			if (l_ext_time > MAX_LS_EXT_TIME)
 				continue;
-			target_speed = (target_speed / 100) *
-				(100 - 3 + target_speed / I2C_MAX_STANDARD_MODE_FREQ);
 			l_cal_para.max_step = MAX_STEP_CNT_DIV;
-			l_cal_para.best_mul = (parent_clk + clk_div * target_speed - 1) /
-				(clk_div * target_speed) + 1;
+			l_cal_para.best_mul = (parent_clk + clk_div * cali_speed - 1) /
+				(clk_div * cali_speed) + 1;
 			l_cal_para.exp_duty_diff = I2C_DUTY_DIFF_TENTHS;
 			ret = mtk_i2c_calculate_speed_v2(i2c, &l_cal_para);
 			if (ret < 0)
@@ -2179,6 +2203,10 @@ static int mtk_i2c_parse_dt(struct device_node *np, struct mtk_i2c *i2c)
 		of_property_read_bool(np, "mediatek,use-push-pull");
 	of_property_read_u32(np, "scl-gpio-id", &i2c->scl_gpio_id);
 	of_property_read_u32(np, "sda-gpio-id", &i2c->sda_gpio_id);
+	ret = of_property_read_u32(np, "cali-speed-scale", &i2c->cali_speed_scale);
+	if (ret < 0)
+		i2c->cali_speed_scale = I2C_DEFAULT_CALI_SCALE;
+	dev_dbg(i2c->dev, "i2c->cali_speed_scale=%u\n", i2c->cali_speed_scale);
 
 	if ((i2c->ch_offset_i2c == I2C_OFFSET_SCP) && (!scp_wake.is_initialized)) {
 

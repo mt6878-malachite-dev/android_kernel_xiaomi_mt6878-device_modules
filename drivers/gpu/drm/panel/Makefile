@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat
+ccflags-y += -I$(srctree)/drivers/input/touchscreen/
 
 obj-$(CONFIG_DRM_PANEL_NOVATEK_NT35695B_VDO) += panel-nt35695b-auo-vdo.o
 obj-$(CONFIG_DRM_PANEL_NOVATEK_NT36672A_VDO) += panel-nt36672a-rt4801-vdo.o
@@ -41,6 +42,11 @@ obj-$(CONFIG_DRM_PANEL_BOE_TS127QFMLL1DKP0) += panel-boe-ts127qfmll1dkp0.o
 obj-$(CONFIG_DRM_PANEL_BOE_TS127QFMLL1DKP0_120HZ) += panel-boe-ts127qfmll1dkp0-120hz.o
 obj-$(CONFIG_DRM_PANEL_NT37707_677_FHDP_DPHY_CMD) += panel-nt37707-667-fhdp-dphy-cmd.o
 obj-$(CONFIG_DRM_PANEL_NT37705_1056_1068_DPHY_CMD) += panel-nt37705-1056-1068-dphy-cmd.o
+obj-$(CONFIG_DRM_PANEL_O16U_42_02_0A_DSC_VDO) += panel-o16u-42-02-0a-dsc-vdo.o
+obj-$(CONFIG_DRM_PANEL_O16U_36_02_0B_DSC_VDO) += panel-o16u-36-02-0b-dsc-vdo.o
+obj-$(CONFIG_DRM_PANEL_O16U_44_0F_0C_DSC_VDO) += panel-o16u-44-0f-0c-dsc-vdo.o
+obj-$(CONFIG_DRM_PANEL_O16U_42_02_0D_DSC_VDO) += panel-o16u-42-02-0d-dsc-vdo.o
+obj-$(CONFIG_DRM_PANEL_VIRTUAL_DEFAULT_DSC_VDO) += panel-o16u-virtual-default-dsc-vdo.o
 ifneq ($(wildcard $(srctree)/$(src)/k6985v1_64),)
 obj-$(CONFIG_DRM_TD2204_WQHD_AMB678ZY01_S6E3HC3_CMD) += k6985v1_64/td2204-wqhd-amb678zy01-s6e3hc3-cmd.o
 endif
@@ -89,5 +95,38 @@ mediatek-cust-panel-sample-y :=  \
 obj-$(CONFIG_DRM_MEDIATEK_PANEL) += mediatek-drm-gateic.o
 obj-$(CONFIG_DRM_MEDIATEK_PANEL) += mediatek-drm-panel-drv.o
 obj-$(CONFIG_DRM_MEDIATEK_PANEL) += mediatek-cust-panel-sample.o
+
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/scp/include/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/dramc/$(MTK_PLATFORM)	\
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/smi/			\
+	         -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mminfra/			\
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mmp/			\
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mmdvfs/			\
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/pmic/			\
+             -I$(DEVICE_MODULES_PATH)/drivers/iommu/				\
+             -I$(DEVICE_MODULES_PATH)/drivers/devfreq/				\
+             -I$(srctree)/drivers/gpu/drm/				\
+             -I$(srctree)/drivers/gpu/drm/display/				\
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include/mach/				\
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat/ \
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/leds/ \
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/leds/$(MTK_PLATFORM) \
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/cmdq/mailbox/        \
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/iommu/		\
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/mtk-interconnect/        \
+             -I$(DEVICE_MODULES_PATH)/sound/soc/mediatek/common/ \
+             -I$(srctree)/drivers/gpu/drm/mediatek \
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/slbc/ \
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/vcp/rv/ \
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/vcp/include/ \
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/cmdq/mailbox/ \
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/clkbuf/v1/inc/ \
+             -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/tinysys_scmi/ \
+             -I$(DEVICE_MODULES_PATH)/drivers/dma-buf/heaps/ \
+             -I$(DEVICE_MODULES_PATH)/drivers/gpu/drm/mediatek/mml \
+             -I$(DEVICE_MODULES_PATH)/drivers/gpu/drm/mediatek/dpc \
+	         -I$(DEVICE_MODULES_PATH)/drivers/clk/mediatek \
+             -I$(DEVICE_MODULES_PATH)/drivers/gpu/drm/mediatek/mediatek_v2/mi_disp/ \
+             -I$(DEVICE_MODULES_PATH)/drivers/gpu/drm/mediatek/mediatek_v2/ \
 
 ccflags-$(CONFIG_DRM_MEDIATEK_PANEL) += -I$(DEVICE_MODULES_PATH)/drivers/leds/

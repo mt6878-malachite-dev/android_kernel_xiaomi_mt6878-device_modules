@@ -207,6 +207,14 @@ void exec_throttle(unsigned int level)
 
 	pr_info("[%s] low_battery_level = %d\n", __func__, level);
 }
+EXPORT_SYMBOL(exec_throttle);
+
+void exec_throttle_level_get(int *level)
+{
+	*level = low_bat_thl_data->low_bat_thl_level;
+	pr_info("[%s] get low_battery_level = %d\n", __func__, low_bat_thl_data->low_bat_thl_level);
+}
+EXPORT_SYMBOL(exec_throttle_level_get);
 
 static unsigned int decide_and_throttle(enum LOW_BATTERY_USER_TAG user, unsigned int input)
 {

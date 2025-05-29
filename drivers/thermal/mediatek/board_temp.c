@@ -12,6 +12,7 @@
 #include <linux/regmap.h>
 #include <linux/slab.h>
 #include <linux/thermal.h>
+#include <linux/iio/consumer.h>
 
 #define READ_TIA_REG_COUNT_MAX 3
 
@@ -68,6 +69,9 @@ struct board_ntc_info {
 	void __iomem *dbg_reg;
 	void __iomem *en_reg;
 	struct pmic_auxadc_data *adc_data;
+        struct iio_channel *channel_charger_ntc;
+	struct iio_channel *channel_flash_ntc;
+	struct iio_channel *channel_mb_ntc;
 };
 
 unsigned int tia2_rc_sel_to_value(unsigned int sel)
@@ -171,47 +175,65 @@ static int board_ntc_get_temp(struct thermal_zone_device *tz, int *temp)
 	unsigned long long v_in;
 	bool is_val_valid, is_rtype_valid;
 
-	while (count < READ_TIA_REG_COUNT_MAX) {
-		val = readl(ntc_info->data_reg);
-
-		is_val_valid = is_adc_data_valid(val, tia_param->valid_bit);
-		if (!is_val_valid) {
-			if (ntc_info->dbg_reg && ntc_info->en_reg) {
-				dbg_reg = readl(ntc_info->dbg_reg);
-				en_reg = readl(ntc_info->en_reg);
-				dev_info(ntc_info->dev,
-					"TIA data invalid, 0x%x, dbg=0x%x, en=0x%x\n",
-					val, dbg_reg, en_reg);
-			} else {
-				dev_info(ntc_info->dev, "TIA data invalid, 0x%x\n", val);
-			}
-			goto RETRY;
-		}
-
-		r_type = get_tia_rc_sel(val, tia_param->rc_offset, tia_param->rc_mask);
-		if (r_type >= adc_data->num_of_pullup_r_type) {
-			dev_info(ntc_info->dev, "Invalid r_type = %d\n", r_type);
-			is_rtype_valid = false;
-			goto RETRY;
-		} else {
-			is_rtype_valid = true;
-		}
-
-		break;
-RETRY:
-		mdelay(1);
-		count++;
+	if(!PTR_ERR_OR_ZERO(ntc_info->channel_charger_ntc))	
+	{
+		iio_read_channel_raw(ntc_info->channel_charger_ntc, &val);
+		r_type = 0;
 	}
+	else if (!PTR_ERR_OR_ZERO(ntc_info->channel_flash_ntc))
+        {
+		iio_read_channel_raw(ntc_info->channel_flash_ntc, &val);
+		r_type = 0;
+        }
+        else if (!PTR_ERR_OR_ZERO(ntc_info->channel_mb_ntc))
+        {
+		iio_read_channel_raw(ntc_info->channel_mb_ntc, &val);
+		r_type = 0;
+        }
+	else 
+        {		
+		while (count < READ_TIA_REG_COUNT_MAX) {
+			val = readl(ntc_info->data_reg);
 
-	if (!is_val_valid)
-		return -EAGAIN;
+			is_val_valid = is_adc_data_valid(val, tia_param->valid_bit);
+			if (!is_val_valid) {
+				if (ntc_info->dbg_reg && ntc_info->en_reg) {
+					dbg_reg = readl(ntc_info->dbg_reg);
+					en_reg = readl(ntc_info->en_reg);
+					dev_info(ntc_info->dev,
+						"TIA data invalid, 0x%x, dbg=0x%x, en=0x%x\n",
+						val, dbg_reg, en_reg);
+				} else {
+					dev_info(ntc_info->dev, "TIA data invalid, 0x%x\n", val);
+				}
+				goto RETRY;
+			}
 
-	if (!is_rtype_valid)
-		return -EINVAL;
+			r_type = get_tia_rc_sel(val, tia_param->rc_offset, tia_param->rc_mask);
+			if (r_type >= adc_data->num_of_pullup_r_type) {
+				dev_info(ntc_info->dev, "Invalid r_type = %d\n", r_type);
+				is_rtype_valid = false;
+				goto RETRY;
+			} else {
+				is_rtype_valid = true;
+			}
 
-	if (!ntc_info->adc_data->adc2volt) {
-		dev_err(ntc_info->dev, "adc2volt should exist\n");
-		return -ENODEV;
+			break;
+RETRY:
+			mdelay(1);
+			count++;
+		}
+
+		if (!is_val_valid)
+			return -EAGAIN;
+
+		if (!is_rtype_valid)
+			return -EINVAL;
+
+		if (!ntc_info->adc_data->adc2volt) {
+			dev_err(ntc_info->dev, "adc2volt should exist\n");
+			return -ENODEV;
+		}
 	}
 
 	v_in = ntc_info->adc_data->adc2volt(get_adc_data(val, tia_param->valid_bit - 1));
@@ -341,12 +363,17 @@ static int board_ntc_probe(struct platform_device *pdev)
 		ntc_info->adc_data->is_initialized = true;
 	}
 
-	platform_set_drvdata(pdev, ntc_info);
+
+	ntc_info->channel_charger_ntc = devm_iio_channel_get(&pdev->dev, "Charger_NTC");
+	ntc_info->channel_flash_ntc = devm_iio_channel_get(&pdev->dev, "Flash_LED_NTC");  
+        ntc_info->channel_mb_ntc = devm_iio_channel_get(&pdev->dev, "MB_NTC");  
+
+	platform_set_drvdata(pdev, ntc_info);     
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	tia_reg = devm_ioremap_resource(&pdev->dev, res);
-	if (IS_ERR(tia_reg))
-		return PTR_ERR(tia_reg);
+	//if (IS_ERR(tia_reg))
+	//	return PTR_ERR(tia_reg);
 
 	ntc_info->data_reg = tia_reg;
 

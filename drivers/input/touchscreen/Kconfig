@@ -20,6 +20,8 @@ config TOUCHSCREEN_MT6985_ALPHA_SUPPORT
          Set Y or M to select this feature for specific platform-mt6985,
          and set N to disable.
 
-source "$(KCONFIG_EXT_PREFIX)drivers/input/touchscreen/NT36532/Kconfig"
+#source "$(KCONFIG_EXT_PREFIX)drivers/input/touchscreen/xiaomi/Kconfig"
+source "$(KCONFIG_EXT_PREFIX)drivers/input/touchscreen/xiaomi_touch/Kconfig"
+source "$(KCONFIG_EXT_PREFIX)drivers/input/touchscreen/tp_get_lcm_name/Kconfig"
 
 endif

@@ -13,7 +13,7 @@
 	keep-100-percent = <(1)>;
 	curr-measure-20a = <(0)>;
 	unit-multiple = <(1)>;
-	r-fg-value = <(1)>;
+	r-fg-value = <(2)>;
 	/* Rsense resistance */
 	embedded-sel = <(0)>;
 	/* Configures whether using embedded battery or not */
@@ -37,19 +37,19 @@
 	/* Battery temperature T2 */
 	temperature-t3 = <(0)>;
 	/* Battery temperature T3 */
-	temperature-t4 = <(-7)>;
+	temperature-t4 = <(-10)>;
 	/* Battery temperature T4 */
 	temperature-t5 = <(-10)>;
 	/* Battery temperature T5 */
-	g-fg-pseudo100-t0 = <(100)>;
+	g-fg-pseudo100-t0 = <(95)>;
 	/* Pseudo 100% percentage at T0 */
-	g-fg-pseudo100-t1 = <(100)>;
+	g-fg-pseudo100-t1 = <(95)>;
 	/* Pseudo 100% percentage at T1 */
-	g-fg-pseudo100-t2 = <(100)>;
+	g-fg-pseudo100-t2 = <(97)>;
 	/* Pseudo 100% percentage at T2 */
-	g-fg-pseudo100-t3 = <(100)>;
+	g-fg-pseudo100-t3 = <(94)>;
 	/* Pseudo 100% percentage at T3 */
-	g-fg-pseudo100-t4 = <(100)>;
+	g-fg-pseudo100-t4 = <(87)>;
 	/* Pseudo 100% percentage at T4 */
 	q-max-sys-voltage-bat0 = <(3000)>;
 	/* Pseudo1 for hide percentage */
@@ -65,7 +65,7 @@
 	/* compensate R_sense resistance */
 	enable-tmp-intr-suspend = <(0)>;
 	/* Enable update temp when suspend */
-	active-table = <(6)>;
+	active-table = <(5)>;
 	/* Table numbers per battery */
 	multi-temp-gauge0 = <(1)>;
 	/* Multi gauge0 enable */
@@ -89,6 +89,10 @@
 	vbat2-det1-voltage3 = <(35000)>;
 	bat-voltage-low-bound1 = <(3400)>;
 	low-tmp-bat-voltage-low-bound1 = <(3500)>;
-#include "mt6878_battery_table.dtsi"
+//#include "mt6878_battery_table.dtsi"
+#include "mt6878_battery_table_O16_SWD_5500mAh.dtsi"
+#include "mt6878_battery_table_O16_SWD_5110mAh.dtsi"
+#include "mt6878_battery_table_O16_NVT_5500mAh.dtsi"
+#include "mt6878_battery_table_O16_NVT_5110mAh.dtsi"
 #include "mt6878_battery_prop_dim2_ext.dtsi"
 };

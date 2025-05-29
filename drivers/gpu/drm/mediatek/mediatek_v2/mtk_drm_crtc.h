@@ -485,19 +485,16 @@ enum MTK_CRTC_PROP {
 	CRTC_PROP_BL_SYNC_GAMMA_GAIN,
 	CRTC_PROP_DYNAMIC_WCG_OFF,
 	CRTC_PROP_WCG_BY_COLOR_MODE,
+#ifdef CONFIG_MI_DISP_FOD_SYNC
+	/*MI FOD SYNC*/
+	CRTC_PROP_MI_FOD_SYNC_INFO,
+#endif
 	CRTC_PROP_MAX,
 };
 
 #define USER_SCEN_BLANK (BIT(0))
 #define USER_SCEN_SKIP_PANEL_SWITCH (BIT(1))
 #define USER_SCEN_SAME_POWER_MODE (BIT(2))
-
-
-enum disp_hrt_usage {
-	DISP_DISABLE,
-	DISP_ENABLE,
-	DISP_OPENING,
-};
 
 enum MTK_CRTC_COLOR_FMT {
 	CRTC_COLOR_FMT_UNKNOWN = 0,
@@ -955,7 +952,6 @@ struct mtk_drm_crtc {
 	unsigned int layer_nr;
 	bool pending_planes;
 	unsigned int ovl_usage_status;
-	enum disp_hrt_usage cur_usage;
 	void __iomem *ovlsys0_regs;
 	resource_size_t ovlsys0_regs_pa;
 	void __iomem *ovlsys1_regs;
@@ -1522,6 +1518,6 @@ void mtk_crtc_addon_connector_rst(struct drm_crtc *crtc, struct cmdq_pkt *cmdq_h
 void mtk_crtc_default_path_rst(struct drm_crtc *crtc, struct cmdq_pkt *cmdq_handle);
 void mtk_crtc_rst_module(struct drm_crtc *crtc);
 void mtk_crtc_init_hrt_usage(struct drm_crtc *crtc);
-
+int esd_restore_backlight(struct drm_crtc *crtc);
 
 #endif /* MTK_DRM_CRTC_H */

@@ -19,6 +19,10 @@
 #include "ccci_modem.h"
 #include "ccci_swtp.h"
 #include "ccci_fsm.h"
+//+ O16  p-weijuan6.wt 2024.04.22  add swtp proc start
+#include <linux/proc_fs.h>
+static unsigned int swtp_gpio_value=0;
+//+ O16  p-weijuan6.wt 2024.04.22  add swtp proc end
 
 /* must keep ARRAY_SIZE(swtp_of_match) = ARRAY_SIZE(irq_name) */
 const struct of_device_id swtp_of_match[] = {
@@ -104,16 +108,28 @@ static int swtp_switch_state(int irq, struct swtp_t *swtp)
 		swtp->gpio_state[i] = SWTP_EINT_PIN_PLUG_IN;
 
 	swtp->tx_power_mode = SWTP_NO_TX_POWER;
-	for (i = 0; i < MAX_PIN_NUM; i++) {
+	// modify by wt.gaoxiangheng for swtp start
+	if (swtp->gpio_state[0] == SWTP_EINT_PIN_PLUG_IN) {
+        swtp->tx_power_mode = SWTP_DO_TX_POWER;
+    } else {
+        swtp->tx_power_mode = SWTP_NO_TX_POWER;
+    }
+    CCCI_LEGACY_ERR_LOG(-1, SYS,"%s:swtp_switch_state : %d\n", __func__, swtp->tx_power_mode);
+
+	
+	/*for (i = 0; i < MAX_PIN_NUM; i++) {
 		if (swtp->gpio_state[i] == SWTP_EINT_PIN_PLUG_IN) {
 			swtp->tx_power_mode = SWTP_DO_TX_POWER;
 			break;
 		}
-	}
-
+	}*/
+    // modify by wt.gaoxiangheng for swtp end
 	inject_pin_status_event(swtp->curr_mode, rf_name);
 	spin_unlock_irqrestore(&swtp->spinlock, flags);
 
+//+ O16  p-weijuan6.wt 2024.04.22  add swtp proc start
+	swtp_gpio_value =(swtp->tx_power_mode);
+//+ O16  p-weijuan6.wt 2024.04.22  add swtp proc end
 	return swtp->tx_power_mode;
 }
 
@@ -178,6 +194,30 @@ int swtp_md_tx_power_req_hdlr(int data)
 	return 0;
 }
 
+//+ O16  p-weijuan6.wt 2024.04.22  add swtp proc start
+static int swtp_gpio_show(struct seq_file *m, void *v)
+{
+	seq_printf(m,"%d\n", swtp_gpio_value);
+	return 0;
+}
+
+static int swtp_gpio_proc_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, swtp_gpio_show, NULL);
+}
+
+static const struct proc_ops swtp_gpio_fops = {
+	.proc_open    = swtp_gpio_proc_open,
+	.proc_read    = seq_read,
+	.proc_lseek  = seq_lseek,
+	.proc_release = single_release,
+};
+
+static void swtp_gpio_create_proc(void)
+{
+	proc_create("swtp_status_value", 0444, NULL, &swtp_gpio_fops);
+}
+//+ O16  p-weijuan6.wt 2024.04.22  add swtp proc end
 static void swtp_init_delayed_work(struct work_struct *work)
 {
 	int i, ret = 0;
@@ -257,6 +297,9 @@ static void swtp_init_delayed_work(struct work_struct *work)
 	}
 	register_ccci_sys_call_back(MD_SW_MD1_TX_POWER_REQ,
 		swtp_md_tx_power_req_hdlr);
+//+ O16  p-weijuan6.wt 2024.04.22  add swtp proc start
+	swtp_gpio_create_proc();
+//+ O16  p-weijuan6.wt 2024.04.22  add swtp proc end
 
 SWTP_INIT_END:
 	CCCI_BOOTUP_LOG(0, SYS, "%s end: ret = %d\n", __func__, ret);
@@ -272,7 +315,7 @@ int swtp_init(void)
 	/* tx work setting */
 	INIT_DELAYED_WORK(&swtp_data.delayed_work,
 		swtp_tx_delayed_work);
-	swtp_data.tx_power_mode = SWTP_NO_TX_POWER;
+	swtp_data.tx_power_mode = SWTP_DO_TX_POWER;
 
 	spin_lock_init(&swtp_data.spinlock);
 

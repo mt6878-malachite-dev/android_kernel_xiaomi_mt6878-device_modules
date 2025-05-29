@@ -39,6 +39,8 @@ enum LOW_BATTERY_USER_TAG {
 };
 
 typedef void (*low_battery_callback)(enum LOW_BATTERY_LEVEL_TAG tag, void *data);
+extern void exec_throttle(unsigned int level);
+extern void exec_throttle_level_get(int *level);
 
 #if IS_ENABLED(CONFIG_MTK_LOW_BATTERY_POWER_THROTTLING)
 int register_low_battery_notify(low_battery_callback lb_cb,

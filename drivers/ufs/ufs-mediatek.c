@@ -69,6 +69,10 @@ static void _ufs_mtk_clk_scale(struct ufs_hba *hba, bool scale_up);
 #include "ufs-mediatek-trace.h"
 #undef CREATE_TRACE_POINTS
 
+#if IS_ENABLED(CONFIG_MI_ERROR_STATE)
+#include "xiaomi/core/ufsctx.h"
+#endif
+
 #define MAX_SUPP_MAC 64
 #define MCQ_QUEUE_OFFSET(c) ((((c) >> 16) & 0xFF) * 0x200)
 #define MCQ_QCFG_SIZE 0x40
@@ -2669,6 +2673,11 @@ static void ufs_mtk_event_notify(struct ufs_hba *hba,
 	struct ufs_mtk_host *host = ufshcd_get_variant(hba);
 
 	trace_ufs_mtk_event(evt, val);
+
+#if IS_ENABLED(CONFIG_MI_ERROR_STATE)
+	ufshcd_update_err_state(evt, val);
+	ufshcd_update_uic_error_cnt(evt, val);
+#endif
 
 	/* Print details of UIC Errors */
 	if (evt <= UFS_EVT_DME_ERR) {

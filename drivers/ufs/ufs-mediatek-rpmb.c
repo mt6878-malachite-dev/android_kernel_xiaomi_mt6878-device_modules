@@ -233,6 +233,10 @@ void ufs_rpmb_vh_compl_command(struct ufs_hba *hba, struct ufshcd_lrb *lrbp)
 		scsi_dma_unmap(cmd);
 
 		bio_for_each_segment(bvec, rq->bio, iter) {
+
+			if (bvec.bv_len < 512)
+				return;
+
 			/* expect only 1 page */
 			buf = bvec_kmap_local(&bvec);
 			rframe = (void *)buf;
@@ -266,7 +270,7 @@ void ufs_rpmb_vh_compl_command(struct ufs_hba *hba, struct ufshcd_lrb *lrbp)
 
 		/* Dump RPMB frame start from nonce to the end */
 		print_hex_dump(KERN_DEBUG, "tail", DUMP_PREFIX_OFFSET,
-			16, 8, buf + 484, 32, false);
+			16, 8, buf + 484, 28, false);
 out:
 		kunmap_local(buf);
 	}

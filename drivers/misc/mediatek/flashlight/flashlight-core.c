@@ -524,7 +524,7 @@ static int flashlight_update_charger_status(struct flashlight_dev *fdev)
 	fl_dev_arg.channel = fdev->dev_id.channel;
 	if (fdev->ops->flashlight_ioctl(FLASH_IOC_IS_CHARGER_READY,
 				(unsigned long)&fl_dev_arg))
-		pr_info("Failed to get charger status\n");
+		pr_debug("Failed to get charger status\n");
 	else
 		fdev->charger_status = fl_dev_arg.arg;
 
@@ -1735,6 +1735,7 @@ static int fl_uninit(void)
 
 static int fl_parse_dt(struct device *dev)
 {
+#ifdef CONFIG_MTK_FLASHLIGHT_PT
 	struct device_node *np;
 
 	if (!dev || !dev->of_node)
@@ -1751,7 +1752,7 @@ static int fl_parse_dt(struct device *dev)
 
 	pr_info("Parse dt pt=(%u,%u,%u).\n",
 		pt_low_bat_level, pt_bat_pc_level, pt_bat_oc_level);
-
+#endif
 	return 0;
 }
 

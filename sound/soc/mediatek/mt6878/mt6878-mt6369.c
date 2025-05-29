@@ -39,7 +39,9 @@ static const char *const mt6878_spk_type_str[] = {MTK_SPK_NOT_SMARTPA_STR,
 						  MTK_SPK_RICHTEK_RT5509_STR,
 						  MTK_SPK_MEDIATEK_MT6660_STR,
 						  MTK_SPK_RICHTEK_RT5512_STR,
-						  MTK_SPK_GOODIX_TFA98XX_STR};
+						  MTK_SPK_GOODIX_TFA98XX_STR,
+						  MTK_SPK_AWINIC_AW882XX_STR,
+						  MTK_SPK_FSM_FS19XX_STR};
 static const char *const
 	mt6878_spk_i2s_type_str[] = {MTK_SPK_I2S_0_STR,
 				     MTK_SPK_I2S_1_STR,
@@ -701,7 +703,8 @@ SND_SOC_DAILINK_DEFS(i2sin2,
 	DAILINK_COMP_ARRAY(COMP_EMPTY()));
 SND_SOC_DAILINK_DEFS(i2sin4,
 	DAILINK_COMP_ARRAY(COMP_CPU("I2SIN4")),
-	DAILINK_COMP_ARRAY(COMP_DUMMY()),
+	DAILINK_COMP_ARRAY(COMP_CODEC("aw882xx_smartpa.6-0034", "aw882xx-aif-6-34"),COMP_CODEC("aw882xx_smartpa.6-0035", "aw882xx-aif-6-35")),
+	//DAILINK_COMP_ARRAY(COMP_DUMMY()),
 	DAILINK_COMP_ARRAY(COMP_EMPTY()));
 SND_SOC_DAILINK_DEFS(i2sout1,
 	DAILINK_COMP_ARRAY(COMP_CPU("I2SOUT1")),
@@ -713,7 +716,8 @@ SND_SOC_DAILINK_DEFS(i2sout2,
 	DAILINK_COMP_ARRAY(COMP_EMPTY()));
 SND_SOC_DAILINK_DEFS(i2sout4,
 	DAILINK_COMP_ARRAY(COMP_CPU("I2SOUT4")),
-	DAILINK_COMP_ARRAY(COMP_DUMMY()),
+	DAILINK_COMP_ARRAY(COMP_CODEC("aw882xx_smartpa.6-0034", "aw882xx-aif-6-34"),COMP_CODEC("aw882xx_smartpa.6-0035", "aw882xx-aif-6-35")),
+	//DAILINK_COMP_ARRAY(COMP_DUMMY()),
 	DAILINK_COMP_ARRAY(COMP_EMPTY()));
 SND_SOC_DAILINK_DEFS(hw_gain0,
 	DAILINK_COMP_ARRAY(COMP_CPU("HW Gain 0")),
@@ -1810,8 +1814,16 @@ static int mt6878_mt6369_dev_probe(struct platform_device *pdev)
 	}
 
 	/* get speaker codec node */
-	spk_node = of_get_child_by_name(pdev->dev.of_node,
+	if (MTK_SPK_FSM_FS19XX == mtk_spk_get_type()) {
+		spk_node = of_get_child_by_name(pdev->dev.of_node,
+                                        "mediatek,speaker-codec-fsm");
+		pr_err("fsm codec");
+	} else {
+		spk_node = of_get_child_by_name(pdev->dev.of_node,
 					"mediatek,speaker-codec");
+		pr_err("aw codec");
+	}
+
 	if (!spk_node) {
 		dev_info(&pdev->dev,
 			"spk_node of_get_child_by_name fail\n");

@@ -361,9 +361,8 @@ static int mtk_set_hw_brightness(struct mt_led_data *led_dat, int brightness,
 	}
 
 	if (params_flag == (1 << SET_BACKLIGHT_LEVEL) &&
-		(led_dat->conf.led_type == LED_TYPE_ATOMIC ||
-		brightness == led_dat->hw_brightness))
-		return ret;
+		(brightness == led_dat->hw_brightness))
+			return ret;
 	pr_debug("set hw brightness(%s): %d -> %d",
 		led_dat->conf.cdev.name, led_dat->hw_brightness, brightness);
 	ret = led_dat->mtk_hw_brightness_set(led_dat, brightness, params, params_flag);

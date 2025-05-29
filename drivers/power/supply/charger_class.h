@@ -82,6 +82,7 @@ struct charger_ops {
 	/* enable/disable charger */
 	int (*enable)(struct charger_device *dev, bool en);
 	int (*is_enabled)(struct charger_device *dev, bool *en);
+	int (*is_bypass_enabled)(struct charger_device *dev, bool *en);
 
 	/* enable/disable chip */
 	int (*enable_chip)(struct charger_device *dev, bool en);
@@ -163,6 +164,7 @@ struct charger_ops {
 
 	/* OTG */
 	int (*enable_otg)(struct charger_device *dev, bool en);
+	int (*enable_otg_regulator)(struct charger_device *dev, bool en);
 	int (*enable_discharge)(struct charger_device *dev, bool en);
 	int (*set_boost_current_limit)(struct charger_device *dev, u32 uA);
 
@@ -188,6 +190,7 @@ struct charger_ops {
 	int (*get_vbus_adc)(struct charger_device *dev, u32 *vbus);
 	int (*get_ibus_adc)(struct charger_device *dev, u32 *ibus);
 	int (*get_ibat_adc)(struct charger_device *dev, u32 *ibat);
+	int (*get_charge_ic_stat)(struct charger_device *dev, u32 *stat);
 	int (*get_tchg_adc)(struct charger_device *dev, int *tchg_min,
 		int *tchg_max);
 	int (*get_zcv)(struct charger_device *dev, u32 *uV);
@@ -209,6 +212,41 @@ struct charger_ops {
 	int (*get_property)(struct charger_device *dev,
 			    enum charger_property prop,
 			    union charger_propval *val);
+	int (*set_dpdm_voltage)(struct charger_device *dev, int dp, int dm);
+	int (*get_typec_ntc1_temp)(struct charger_device *dev, int *value);
+	int (*get_typec_ntc2_temp)(struct charger_device *dev, int *value);
+
+	/* For SC8541 */
+	int (*cp_set_mode)(struct charger_device *dev, int value);
+	int (*cp_device_init)(struct charger_device *dev, int value);
+	int (*cp_get_vbatt)(struct charger_device *dev, u32 *vbatt);
+	int (*cp_get_ibatt)(struct charger_device *dev, u32 *ibatt);
+	int (*cp_enable_adc)(struct charger_device *dev, bool en);
+	int (*cp_get_bypass_support)(struct charger_device *chg_dev, bool *enabled);
+	int (*set_pmic_ovp_en)(struct charger_device *dev, bool en);
+	int (*set_ibus_ucp_en)(struct charger_device *dev, bool en);
+	int (*set_wpc_gate_en)(struct charger_device *dev, bool en);
+	int (*set_usb_gate_en)(struct charger_device *dev, bool en);
+	int (*cp_dump_register)(struct charger_device *dev);
+	int (*enable_acdrv_manual)(struct charger_device *dev, bool enable);
+	int (*cp_chip_ok)(struct charger_device *dev, int *val);
+	int (*cp_get_tdie)(struct charger_device *dev, u32 *tdie_adc);
+	int (*cp_get_fault_type)(struct charger_device *dev, u32 *fault_type);
+	int (*cp_clear_fault_type)(struct charger_device *dev);
+	int (*cp_get_en_fail_status)(struct charger_device *dev, bool *en_failed);
+	int (*cp_set_en_fail_status)(struct charger_device *dev, bool en_failed);
+	int (*enable_bypass)(struct charger_device *dev, bool en);
+	int (*cp_reset_check)(struct charger_device *chg_dev);
+	int (*cp_init_check)(struct charger_device *chg_dev);
+
+	//rust detection
+#if defined(CONFIG_RUST_DETECTION)
+	int (*rust_detection_init)(struct charger_device *dev);
+	int (*rust_detection_choose_channel)(struct charger_device *dev, int channel);
+	int (*rust_detection_enable)(struct charger_device *dev, int en);
+	int (*rust_detection_read_res)(struct charger_device *dev);
+	int (*rust_detection_is_et7480)(struct charger_device *dev, bool *is_et7480);
+#endif
 };
 
 static inline void *charger_dev_get_drvdata(
@@ -242,6 +280,10 @@ static inline void *charger_get_data(
 
 extern int charger_dev_enable(struct charger_device *charger_dev, bool en);
 extern int charger_dev_is_enabled(struct charger_device *charger_dev, bool *en);
+extern int charger_dev_is_bypass_enabled(struct charger_device *charger_dev, bool *en);
+extern int charger_dev_cp_get_bypass_support(struct charger_device *charger_dev, bool *en);
+extern int charger_dev_cp_reset_check(struct charger_device *charger_dev);
+extern int charger_dev_cp_init_check(struct charger_device *charger_dev);
 extern int charger_dev_plug_in(struct charger_device *charger_dev);
 extern int charger_dev_plug_out(struct charger_device *charger_dev);
 extern int charger_dev_set_charging_current(
@@ -304,6 +346,8 @@ extern int charger_dev_enable_chg_type_det(
 	struct charger_device *charger_dev, bool en);
 extern int charger_dev_enable_otg(
 	struct charger_device *charger_dev, bool en);
+extern int charger_dev_enable_otg_regulator(
+	struct charger_device *charger_dev, bool en);
 extern int charger_dev_enable_discharge(
 	struct charger_device *charger_dev, bool en);
 extern int charger_dev_set_boost_current_limit(
@@ -353,9 +397,15 @@ extern int charger_dev_get_ibus(
 	struct charger_device *charger_dev, u32 *ibus);
 extern int charger_dev_get_ibat(
 	struct charger_device *charger_dev, u32 *ibat);
+extern int charger_dev_get_charge_ic_stat(
+	struct charger_device *charger_dev, u32 *stat);
 extern int charger_dev_get_temperature(
 	struct charger_device *charger_dev, int *tchg_min,
 		int *tchg_max);
+extern int charger_dev_get_typec_ntc1_temp(
+	struct charger_device *charger_dev, int *value);
+extern int charger_dev_get_typec_ntc2_temp(
+	struct charger_device *charger_dev, int *value);
 extern int charger_dev_set_direct_charging_ibusoc(
 	struct charger_device *charger_dev, u32 ua);
 extern int charger_dev_set_direct_charging_vbusov(
@@ -392,6 +442,8 @@ extern int charger_dev_set_property(struct charger_device *dev,
 extern int charger_dev_get_property(struct charger_device *dev,
 				    enum charger_property prop,
 				    union charger_propval *val);
+extern int charger_dev_set_dpdm_voltage(struct charger_device *dev,
+					int dp, int dm);
 
 /* For buck1 FPWM */
 extern int charger_dev_enable_hidden_mode(struct charger_device *dev, bool en);
@@ -405,5 +457,36 @@ extern int unregister_charger_device_notifier(
 extern int charger_dev_notify(
 	struct charger_device *charger_dev, int event);
 
+extern int charger_dev_cp_set_mode(struct charger_device *charger_dev, int value);
+
+extern int charger_dev_cp_device_init(struct charger_device *charger_dev, int value);
+extern int charger_dev_cp_get_vbatt(struct charger_device *charger_dev, u32 *vbatt);
+
+extern int charger_dev_cp_get_ibatt(struct charger_device *charger_dev, u32 *ibatt);
+extern int charger_dev_cp_enable_adc(struct charger_device *dev, bool en);
+extern int charger_dev_cp_dump_register(struct charger_device *charger_dev);
+
+/* For sc8541 */
+extern int charger_dev_enable_acdrv_manual(struct charger_device *charger_dev, bool enable);
+extern int charger_dev_cp_chip_ok(struct charger_device *charger_dev, int *value);
+extern int charger_dev_cp_get_tdie(struct charger_device *charger_dev, u32 *tdie_adc);
+extern int charger_dev_cp_get_fault_type(struct charger_device *charger_dev, u32 *fault_type);
+extern int charger_dev_cp_clear_fault_type(struct charger_device *charger_dev);
+extern int charger_dev_cp_get_en_fail_status(struct charger_device *charger_dev, bool *en_failed);
+extern int charger_dev_cp_set_en_fail_status(struct charger_device *charger_dev, bool en_failed);
+
+/* add for enable pmic ovp function */
+extern int charger_dev_enable_pmic_ovp(struct charger_device *chg_dev, bool en);
+extern int charger_dev_enable_cp_ucp(struct charger_device *chg_dev, bool en);
+extern int charger_dev_enable_cp_wpc_gate(struct charger_device *chg_dev, bool en);
+extern int charger_dev_enable_cp_usb_gate(struct charger_device *chg_dev, bool en);
+
+#if defined(CONFIG_RUST_DETECTION)
+extern int charger_dev_rust_detection_init(struct charger_device *chg_dev);
+extern int charger_dev_rust_detection_choose_channel(struct charger_device *chg_dev, int channel);
+extern int charger_dev_rust_detection_enable(struct charger_device *chg_dev, int en);
+extern int charger_dev_rust_detection_read_res(struct charger_device *chg_dev);
+extern int charger_dev_rust_detection_is_et7480(struct charger_device *chg_dev, bool *is_et7480);
+#endif
 
 #endif /*LINUX_POWER_CHARGER_CLASS_H*/

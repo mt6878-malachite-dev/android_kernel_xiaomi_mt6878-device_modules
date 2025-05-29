@@ -657,7 +657,6 @@ void vip_replace_next_task_fair(void *unused, struct rq *rq, struct task_struct 
 	struct vip_task_struct *vts;
 	struct task_struct *vip;
 
-
 	if (unlikely(!vip_enable))
 		return;
 

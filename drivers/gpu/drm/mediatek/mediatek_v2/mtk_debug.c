@@ -49,6 +49,13 @@
 #include "mtk_dsi.h"
 #include "mtk_disp_vidle.h"
 #include <clk-fmeter.h>
+#ifdef CONFIG_MI_DISP
+#include "mi_disp/mi_dsi_panel.h"
+#endif
+
+#ifdef CONFIG_MI_DISP_FOD_SYNC
+#include "mi_disp/mi_drm_crtc.h"
+#endif
 
 #define DISP_REG_CONFIG_MMSYS_CG_SET(idx) (0x104 + 0x10 * (idx))
 #define DISP_REG_CONFIG_MMSYS_CG_CLR(idx) (0x108 + 0x10 * (idx))
@@ -528,6 +535,9 @@ int __mtkfb_set_backlight_level(unsigned int level, unsigned int panel_ext_param
 		DDPPR_ERR("%s failed to find crtc\n", __func__);
 		return -EINVAL;
 	}
+#ifdef CONFIG_MI_DISP_FOD_SYNC
+	ret = mi_drm_bl_wait_for_completion(crtc, level);
+#endif
 	if (group == true)
 		ret = mtk_drm_setbacklight_grp(crtc, level, panel_ext_param, cfg_flag);
 	else
@@ -552,7 +562,6 @@ int mtk_drm_set_conn_backlight_level(unsigned int conn_id, unsigned int level,
 	struct mtk_drm_crtc *mtk_crtc;
 	struct mtk_dsi *mtk_dsi;
 	int ret = 0;
-	unsigned int crtc_idx, async_ctrl_flag = 0;
 
 	if (IS_ERR_OR_NULL(drm_dev)) {
 		DDPPR_ERR("%s, invalid drm dev\n", __func__);
@@ -565,9 +574,6 @@ int mtk_drm_set_conn_backlight_level(unsigned int conn_id, unsigned int level,
 		return -EINVAL;
 	}
 
-	if (mtk_drm_helper_get_opt(priv->helper_opt, MTK_DRM_OPT_ASYNC_CONN_PWR_CTRL))
-		async_ctrl_flag = 1;
-
 	/* connector obj ref count add 1 after lookup */
 	conn = drm_connector_lookup(drm_dev, NULL, conn_id);
 	if (IS_ERR_OR_NULL(conn)) {
@@ -577,11 +583,6 @@ int mtk_drm_set_conn_backlight_level(unsigned int conn_id, unsigned int level,
 
 	mtk_dsi = container_of(conn, struct mtk_dsi, conn);
 
-
-	/* due to DSI connector might attach to different CRTC in each atomic_commit */
-	/* it's risky utilizing macro check_and_try_commit_lock polling specific CRTC wound state */
-	/* need to check current crtc which DSI is attached to each time hold the mutex lock */
-TRY_COMMIT_LOCK:
 	DDP_COMMIT_LOCK(&priv->commit.lock, __func__, __LINE__);
 	mtk_crtc = mtk_dsi->ddp_comp.mtk_crtc;
 	crtc = (mtk_crtc) ? &mtk_crtc->base : NULL;
@@ -590,15 +591,6 @@ TRY_COMMIT_LOCK:
 		DDPPR_ERR("%s, invalid crtc\n", __func__);
 		ret = -EINVAL;
 		goto out;
-	}
-
-	crtc_idx = drm_crtc_index(crtc);
-	if (async_ctrl_flag && crtc_idx < MAX_CRTC &&
-			atomic_read(&priv->need_wound_crtc[crtc_idx])) {
-		DDP_COMMIT_UNLOCK(&priv->commit.lock, __func__, __LINE__);
-		wait_event_interruptible(priv->wound_wq[crtc_idx],
-			atomic_read(&priv->need_wound_crtc[crtc_idx]) == 0);
-		goto TRY_COMMIT_LOCK;
 	}
 
 	ret = mtk_drm_setbacklight(crtc, level, panel_ext_param, cfg_flag, 1);
@@ -716,7 +708,6 @@ int mtk_drm_set_conn_aod_backlight_level(unsigned int conn_id,
 	struct mtk_drm_crtc *mtk_crtc;
 	struct mtk_dsi *mtk_dsi;
 	int ret = 0;
-	unsigned int crtc_idx, async_ctrl_flag = 0;
 
 	if (IS_ERR_OR_NULL(drm_dev)) {
 		DDPPR_ERR("%s, invalid drm dev\n", __func__);
@@ -729,9 +720,6 @@ int mtk_drm_set_conn_aod_backlight_level(unsigned int conn_id,
 		return -EINVAL;
 	}
 
-	if (mtk_drm_helper_get_opt(priv->helper_opt, MTK_DRM_OPT_ASYNC_CONN_PWR_CTRL))
-		async_ctrl_flag = 1;
-
 	/* connector obj ref count add 1 after lookup */
 	conn = drm_connector_lookup(drm_dev, NULL, conn_id);
 	if (IS_ERR_OR_NULL(conn)) {
@@ -741,11 +729,6 @@ int mtk_drm_set_conn_aod_backlight_level(unsigned int conn_id,
 
 	mtk_dsi = container_of(conn, struct mtk_dsi, conn);
 
-
-	/* due to DSI connector might attach to different CRTC in each atomic_commit */
-	/* it's risky utilizing macro check_and_try_commit_lock polling specific CRTC wound state */
-	/* need to check current crtc which DSI is attached to each time hold the mutex lock */
-TRY_COMMIT_LOCK:
 	DDP_COMMIT_LOCK(&priv->commit.lock, __func__, __LINE__);
 	mtk_crtc = mtk_dsi->ddp_comp.mtk_crtc;
 	crtc = (mtk_crtc) ? &mtk_crtc->base : NULL;
@@ -754,15 +737,6 @@ TRY_COMMIT_LOCK:
 		DDPPR_ERR("%s, invalid crtc\n", __func__);
 		ret = -EINVAL;
 		goto out;
-	}
-
-	crtc_idx = drm_crtc_index(crtc);
-	if (async_ctrl_flag && crtc_idx < MAX_CRTC &&
-			atomic_read(&priv->need_wound_crtc[crtc_idx])) {
-		DDP_COMMIT_UNLOCK(&priv->commit.lock, __func__, __LINE__);
-		wait_event_interruptible(priv->wound_wq[crtc_idx],
-			atomic_read(&priv->need_wound_crtc[crtc_idx]) == 0);
-		goto TRY_COMMIT_LOCK;
 	}
 
 	ret = mtk_drm_aod_setbacklight(crtc, level);
@@ -1418,6 +1392,155 @@ int mtk_ddic_dsi_send_cmd(struct mtk_ddic_dsi_msg *cmd_msg,
 	return ret;
 }
 
+ int mtk_ddic_dsi_wait_te_send_cmd(struct mtk_ddic_dsi_msg *cmd_msg,
+ 			bool blocking)
+ {
+ 	struct drm_crtc *crtc;
+ 	struct mtk_drm_crtc *mtk_crtc;
+ 	struct mtk_drm_private *private;
+ 	struct mtk_ddp_comp *output_comp;
+ 	struct cmdq_pkt *cmdq_handle;
+ 	struct cmdq_client *gce_client;
+ 	bool is_frame_mode;
+ 	bool use_lpm = false;
+ 	struct mtk_cmdq_cb_data *cb_data;
+ 	int index = 0;
+ 	int ret = 0;
+
+ 	if (IS_ERR_OR_NULL(drm_dev)) {
+ 		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+ 		return -EINVAL;
+ 	}
+
+ 	DDPMSG("%s +\n", __func__);
+
+ 	/* This cmd only for crtc0 */
+ 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
+ 			typeof(*crtc), head);
+ 	if (IS_ERR_OR_NULL(crtc)) {
+ 		DDPPR_ERR("find crtc fail\n");
+ 		return -EINVAL;
+ 	}
+
+ 	index = drm_crtc_index(crtc);
+
+ 	CRTC_MMP_EVENT_START(index, ddic_send_cmd, (unsigned long)crtc,
+ 				blocking);
+
+ 	private = crtc->dev->dev_private;
+ 	mtk_crtc = to_mtk_crtc(crtc);
+
+ 	DDP_MUTEX_LOCK(&private->commit.lock, __func__, __LINE__);
+ 	DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
+
+ 	if (!mtk_crtc->enabled) {
+ 		DDPMSG("crtc%d disable skip %s\n",
+ 			drm_crtc_index(&mtk_crtc->base), __func__);
+ 		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+ 		DDP_MUTEX_UNLOCK(&private->commit.lock, __func__, __LINE__);
+ 		CRTC_MMP_EVENT_END(index, ddic_send_cmd, 0, 1);
+ 		return -EINVAL;
+ 	} else if (mtk_crtc->ddp_mode == DDP_NO_USE) {
+ 		DDPMSG("skip %s, ddp_mode: NO_USE\n",
+ 			__func__);
+ 		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+ 		DDP_MUTEX_UNLOCK(&private->commit.lock, __func__, __LINE__);
+ 		CRTC_MMP_EVENT_END(index, ddic_send_cmd, 0, 2);
+ 		return -EINVAL;
+ 	}
+
+ 	output_comp = mtk_ddp_comp_request_output(mtk_crtc);
+ 	if (unlikely(!output_comp)) {
+ 		DDPPR_ERR("%s:invalid output comp\n", __func__);
+ 		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+ 		DDP_MUTEX_UNLOCK(&private->commit.lock, __func__, __LINE__);
+ 		CRTC_MMP_EVENT_END(index, ddic_send_cmd, 0, 3);
+ 		return -EINVAL;
+ 	}
+
+ 	is_frame_mode = mtk_crtc_is_frame_trigger_mode(&mtk_crtc->base);
+ 	if (cmd_msg)
+ 		use_lpm = cmd_msg->flags & MIPI_DSI_MSG_USE_LPM;
+
+ 	CRTC_MMP_MARK(index, ddic_send_cmd, 1, 0);
+
+ 	/* Kick idle */
+ 	mtk_drm_idlemgr_kick(__func__, crtc, 0);
+
+ 	CRTC_MMP_MARK(index, ddic_send_cmd, 2, 0);
+
+ 	/* only use CLIENT_DSI_CFG for VM CMD scenario */
+ 	/* use CLIENT_CFG otherwise */
+
+ 	gce_client = (!is_frame_mode && use_lpm) ?
+ 			mtk_crtc->gce_obj.client[CLIENT_DSI_CFG] :
+ 			mtk_crtc->gce_obj.client[CLIENT_CFG];
+
+ 	mtk_crtc_pkt_create(&cmdq_handle, crtc, gce_client);
+
+ 	if (mtk_crtc_with_sub_path(crtc, mtk_crtc->ddp_mode))
+ 		mtk_crtc_wait_frame_done(mtk_crtc, cmdq_handle,
+ 			DDP_SECOND_PATH, 0);
+ 	else
+ 		mtk_crtc_wait_frame_done(mtk_crtc, cmdq_handle,
+ 			DDP_FIRST_PATH, 0);
+
+ 	if (is_frame_mode) {
+ 		cmdq_pkt_clear_event(cmdq_handle,
+ 				     mtk_crtc->gce_obj.event[EVENT_TE]);
+
+ 		if (mtk_drm_lcm_is_connect(mtk_crtc))
+ 			cmdq_pkt_wfe(cmdq_handle,
+ 					 mtk_crtc->gce_obj.event[EVENT_TE]);
+ 	}
+ 	if (is_frame_mode) {
+ 		cmdq_pkt_clear_event(cmdq_handle,
+ 			mtk_crtc->gce_obj.event[EVENT_STREAM_BLOCK]);
+ 		cmdq_pkt_wfe(cmdq_handle,
+ 			mtk_crtc->gce_obj.event[EVENT_CABC_EOF]);
+ 		cmdq_pkt_clear_event(cmdq_handle,
+ 			mtk_crtc->gce_obj.event[EVENT_STREAM_DIRTY]);
+ 	}
+
+ 	/* DSI_SEND_DDIC_CMD */
+ 	if (output_comp)
+ 		ret = mtk_ddp_comp_io_cmd(output_comp, cmdq_handle,
+ 		DSI_SEND_DDIC_CMD, cmd_msg);
+
+ 	if (is_frame_mode) {
+ 		cmdq_pkt_set_event(cmdq_handle,
+ 			mtk_crtc->gce_obj.event[EVENT_STREAM_DIRTY]);
+ 		cmdq_pkt_set_event(cmdq_handle,
+ 			mtk_crtc->gce_obj.event[EVENT_CABC_EOF]);
+ 		cmdq_pkt_set_event(cmdq_handle,
+ 			mtk_crtc->gce_obj.event[EVENT_STREAM_BLOCK]);
+ 	}
+
+ 	if (blocking) {
+ 		cmdq_pkt_flush(cmdq_handle);
+ 		cmdq_pkt_destroy(cmdq_handle);
+ 	} else {
+ 		cb_data = kmalloc(sizeof(*cb_data), GFP_KERNEL);
+ 		if (!cb_data) {
+ 			DDPPR_ERR("%s:cb data creation failed\n", __func__);
+ 			DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+ 			DDP_MUTEX_UNLOCK(&private->commit.lock, __func__, __LINE__);
+ 			CRTC_MMP_EVENT_END(index, ddic_send_cmd, 0, 4);
+ 			return -EINVAL;
+ 		}
+
+ 		cb_data->cmdq_handle = cmdq_handle;
+ 		cmdq_pkt_flush_threaded(cmdq_handle, mtk_ddic_send_cb, cb_data);
+ 	}
+ 	DDPMSG("%s -\n", __func__);
+ 	DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+ 	DDP_MUTEX_UNLOCK(&private->commit.lock, __func__, __LINE__);
+ 	CRTC_MMP_EVENT_END(index, ddic_send_cmd, (unsigned long)crtc,
+ 			blocking);
+
+ 	return ret;
+ }
+
 static void set_cwb_info_buffer(struct drm_crtc *crtc, int format)
 {
 
@@ -1487,18 +1610,21 @@ int mtk_ddic_dsi_read_cmd(struct mtk_ddic_dsi_msg *cmd_msg)
 	private = crtc->dev->dev_private;
 	mtk_crtc = to_mtk_crtc(crtc);
 
+	DDP_COMMIT_LOCK(&private->commit.lock, __func__, __LINE__);
 	DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
 
 	if (!mtk_crtc->enabled) {
 		DDPMSG("crtc%d disable skip %s\n",
 			drm_crtc_index(&mtk_crtc->base), __func__);
 		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+		DDP_COMMIT_UNLOCK(&private->commit.lock, __func__, __LINE__);
 		CRTC_MMP_EVENT_END(index, ddic_read_cmd, 0, 1);
 		return -EINVAL;
 	} else if (mtk_crtc->ddp_mode == DDP_NO_USE) {
 		DDPMSG("skip %s, ddp_mode: NO_USE\n",
 			__func__);
 		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+		DDP_COMMIT_UNLOCK(&private->commit.lock, __func__, __LINE__);
 		CRTC_MMP_EVENT_END(index, ddic_read_cmd, 0, 2);
 		return -EINVAL;
 	}
@@ -1507,6 +1633,7 @@ int mtk_ddic_dsi_read_cmd(struct mtk_ddic_dsi_msg *cmd_msg)
 	if (unlikely(!output_comp)) {
 		DDPPR_ERR("%s:invalid output comp\n", __func__);
 		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+		DDP_COMMIT_UNLOCK(&private->commit.lock, __func__, __LINE__);
 		CRTC_MMP_EVENT_END(index, ddic_read_cmd, 0, 3);
 		return -EINVAL;
 	}
@@ -1527,10 +1654,12 @@ int mtk_ddic_dsi_read_cmd(struct mtk_ddic_dsi_msg *cmd_msg)
 
 	DDPMSG("%s -\n", __func__);
 	DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+	DDP_COMMIT_UNLOCK(&private->commit.lock, __func__, __LINE__);
 	CRTC_MMP_EVENT_END(index, ddic_read_cmd, (unsigned long)crtc, 4);
 
 	return ret;
 }
+EXPORT_SYMBOL(mtk_ddic_dsi_read_cmd);
 
 void ddic_dsi_send_cmd_test(unsigned int case_num)
 {

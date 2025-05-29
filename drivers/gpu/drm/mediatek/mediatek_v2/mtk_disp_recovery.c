@@ -38,6 +38,8 @@
 #define ESD_CHECK_PERIOD 2000 /* ms */
 #define esd_timer_to_mtk_crtc(x) container_of(x, struct mtk_drm_crtc, esd_timer)
 
+extern int esd_restore_backlight(struct drm_crtc *crtc);
+
 static DEFINE_MUTEX(pinctrl_lock);
 
 /* pinctrl implementation */
@@ -555,7 +557,8 @@ int mtk_drm_esd_testing_process(struct mtk_drm_esd_ctx *esd_ctx, bool need_lock)
 		int i = 0;
 		int recovery_flg = 0;
 		unsigned int crtc_idx;
-
+		int need_restore_backlight = 0;
+		struct mtk_crtc_state *mtk_state = NULL;
 		if (!esd_ctx) {
 			DDPPR_ERR("%s invalid ESD context, stop thread\n", __func__);
 			return -EINVAL;
@@ -575,10 +578,18 @@ int mtk_drm_esd_testing_process(struct mtk_drm_esd_ctx *esd_ctx, bool need_lock)
 			DDPPR_ERR("%s invalid mtk_crtc stop thread\n", __func__);
 			return -EINVAL;
 		}
+
+		mtk_state = to_mtk_crtc_state(crtc->state);
+		if (mtk_state->prop_val[CRTC_PROP_DOZE_ACTIVE]) {
+			DDPDBG("%s doze active, mtk_crtc stop thread\n", __func__);
+			return 0;
+		}
+
 		crtc_idx = drm_crtc_index(crtc);
 
 		private = crtc->dev->dev_private;
 		if (need_lock) {
+			DDP_COMMIT_LOCK(&private->commit.lock, __func__, __LINE__);
 			DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
 			CRTC_MMP_MARK(crtc_idx, esd_check, 0x10CF, 0);
 		}
@@ -593,6 +604,7 @@ int mtk_drm_esd_testing_process(struct mtk_drm_esd_ctx *esd_ctx, bool need_lock)
 			DDPPR_ERR("[ESD%u]esd check fail, will do esd recovery. try=%d\n",
 				crtc_idx, i);
 			mtk_drm_esd_recover(crtc);
+			need_restore_backlight = 1;
 			recovery_flg = 1;
 			mtk_drm_trace_end();
 		} while (++i < ESD_TRY_CNT);
@@ -605,9 +617,15 @@ int mtk_drm_esd_testing_process(struct mtk_drm_esd_ctx *esd_ctx, bool need_lock)
 
 			if (need_lock) {
 				DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+				DDP_COMMIT_UNLOCK(&private->commit.lock, __func__, __LINE__);
 			}
 			return 0;
 		} else if (recovery_flg && ret == 0) {
+			if (need_restore_backlight) {
+				DDPINFO("%s: esd_restore_backlight\n", __func__);
+				esd_restore_backlight(crtc);
+				need_restore_backlight = 0;
+			}
 			DDPPR_ERR("[ESD%u] esd recovery success\n", crtc_idx);
 			recovery_flg = 0;
 		}
@@ -615,6 +633,7 @@ int mtk_drm_esd_testing_process(struct mtk_drm_esd_ctx *esd_ctx, bool need_lock)
 
 		if (need_lock) {
 			DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+			DDP_COMMIT_UNLOCK(&private->commit.lock, __func__, __LINE__);
 		}
 
 		return 0;

@@ -42,6 +42,8 @@ static const struct coordinate coordinates[] = {
 static int hf_manager_major;
 static struct class *hf_manager_class;
 static uint8_t hf_manager_debug_sensor_type;
+static uint8_t hf_cust_cmd_debug_sensor_type;
+
 
 static DECLARE_BITMAP(sensor_list_bitmap, SENSOR_TYPE_SENSOR_MAX);
 static struct hf_core hfcore;
@@ -1712,6 +1714,93 @@ static const struct proc_ops hf_manager_proc_fops = {
 	.proc_lseek          = seq_lseek,
 };
 
+ static int hf_cust_cmd_proc_show(struct seq_file *m, void *data)
+{
+	uint8_t sensor_type = READ_ONCE(hf_cust_cmd_debug_sensor_type);
+
+	seq_printf(m, "%d\n", sensor_type);
+	return 0;
+}
+
+static int hf_cust_cmd_proc_open(struct inode *inode, struct file *filp)
+{
+	return single_open(filp, hf_cust_cmd_proc_show, pde_data(inode));
+}
+
+static ssize_t test_cust_cmd(uint32_t sensor_type, uint32_t enable)
+{
+	ssize_t ret = 0;
+	struct hf_client *client = NULL;
+	struct custom_cmd cmd;
+
+	client = hf_client_create();
+	if (!client) {
+		pr_err("hf_client_create fail\n");
+		return -ENOMEM;
+	}
+	ret = hf_client_find_sensor(client, sensor_type);
+	if (ret < 0) {
+		pr_err("hf_client_find_sensor %u fail\n", sensor_type);
+		goto out;
+	}
+
+	memset(&cmd, 0, sizeof(cmd));
+	cmd.command = 0;
+	cmd.data[0] = enable;
+	cmd.tx_len = 4;
+	cmd.rx_len = 8;
+	ret = hf_client_custom_cmd(client, sensor_type, &cmd);
+	if (ret >= 0)
+		printk("cmd.data [%d]\n",cmd.data[0]);
+out:
+	hf_client_destroy(client);
+	return ret;
+}
+
+static ssize_t hf_cust_cmd_proc_write(struct file *file,
+  		const char  *buffer, size_t count, loff_t *data)
+{
+	int len = 0, ret = 0;
+	char desc[32] = {0};
+	uint32_t enable = 0;
+	uint32_t sensor_type;
+	struct hf_core *core = pde_data(file_inode(file));
+
+	printk("enter hf_cust_cmd_proc_write\n");
+	if (!core)
+		return -EINVAL;
+	if (count <= 0)
+		return -EINVAL;
+
+	len = (count < (sizeof(desc) - 1)) ? count : (sizeof(desc) - 1);
+	if (copy_from_user(desc, buffer, len)) {
+		printk("hf_cust_cmd_proc_write copy fail\n");
+		return -EFAULT;
+	}
+
+	desc[len] = '\0';
+
+	ret = sscanf(desc, "%u %u", &sensor_type, &enable);
+	printk("%s: ret = %d,sensor_type = %u,enable = %u\n", __func__,ret, sensor_type, enable);
+	if (ret == 2) {
+		test_cust_cmd(sensor_type, enable);
+		if (unlikely(sensor_type >= SENSOR_TYPE_SENSOR_MAX))
+			return -EINVAL;
+	    WRITE_ONCE(hf_cust_cmd_debug_sensor_type, sensor_type);
+		return count;
+	}
+
+	return count;
+}
+
+static const struct proc_ops hf_cust_cmd_proc_fops = {
+	.proc_open           = hf_cust_cmd_proc_open,
+	.proc_write          = hf_cust_cmd_proc_write,
+	.proc_release        = single_release,
+	.proc_read           = seq_read,
+	.proc_lseek          = seq_lseek,
+};
+
 static int __init hf_manager_init(void)
 {
 	int ret;
@@ -1744,6 +1833,10 @@ static int __init hf_manager_init(void)
 
 	if (!proc_create_data("hf_manager", 0600, NULL,
 			&hf_manager_proc_fops, &hfcore))
+		pr_err("Failed to create proc\n");
+
+	if (!proc_create_data("cust_cmd", 0644, NULL,
+			&hf_cust_cmd_proc_fops, &hfcore))
 		pr_err("Failed to create proc\n");
 
 	hfcore.kworker = kthread_create_worker(0, "hf_manager");

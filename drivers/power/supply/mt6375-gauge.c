@@ -28,6 +28,7 @@
 #if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 #include <mt-plat/aee.h>
 #endif
+#include <linux/hardware_info.h>
 
 #define RG_TM_PASCODE1				0x107
 #define RG_ADC_CONFG1				0x1A4
@@ -4086,6 +4087,7 @@ static int mt6375_gauge_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "Failed to do mtk gauge init\n");
 		goto out_irq_chip;
 	}
+	hardwareinfo_set_prop(HARDWARE_BMS_GAUGE, "mt6375_gauge");
 
 	return 0;
 
